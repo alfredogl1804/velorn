@@ -17,6 +17,7 @@ import ShortFilmEasyMode from './generate/ShortFilmEasyMode'
 import WorkflowBrowser from './generate/WorkflowBrowser'
 import WorkflowDetail from './generate/WorkflowDetail'
 import TemplateDetail from './generate/TemplateDetail'
+import MyComputerGeneratePanel from './MyComputerGeneratePanel'
 import {
   IMPORTED_WORKFLOWS_CHANGED_EVENT,
   IMPORTED_WORKFLOW_ID_PREFIX,
@@ -16947,6 +16948,17 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             >
               {t('generate.mode.director')}
             </button>
+            <button
+              onClick={() => {
+                setGenerationMode('mycomputer')
+                setWorkflowDetailOpen(false)
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors ${generationMode === 'mycomputer' ? 'bg-sf-accent text-white' : 'text-sf-text-muted hover:text-sf-text-primary'}`}
+              title="Generate through El Monstruo’s sovereign media control plane"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              Monstruo
+            </button>
           </div>
         </div>
 
@@ -17024,6 +17036,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
 
                 </div>
               </div>
+            )}
+
+            {generationMode === 'mycomputer' && (
+              <MyComputerGeneratePanel />
             )}
 
             {generationMode === 'single' && (
@@ -19763,7 +19779,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           </div>
         </div>
 
-        {/* Right: Progress + Generate (collapsible) */}
+        {/* Right: Progress + Generate (collapsible). My Computer owns its own async job controls. */}
+        {generationMode !== 'mycomputer' && (
         <div className={`${rightSidebarCollapsed ? 'w-12' : 'w-80'} flex-shrink-0 min-h-0 border-l border-sf-dark-700 bg-sf-dark-900 flex flex-col overflow-hidden transition-all duration-200`}>
           {rightSidebarCollapsed ? (
             <button
@@ -20266,6 +20283,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           </>
           )}
         </div>
+        )}
       </div>
 
       {/* ComfyUI activity log – always present, expand/collapse for troubleshooting */}

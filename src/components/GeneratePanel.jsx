@@ -1,4 +1,4 @@
-import { Sparkles, RefreshCw, Upload, Wand2, Settings, Video, Music, Mic, Volume2, Clock, X, Loader2, Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Sparkles, RefreshCw, Upload, Wand2, Settings, Video, Music, Mic, Volume2, Clock, X, Loader2, Check, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import useComfyUI from '../hooks/useComfyUI'
 import useAssetsStore from '../stores/assetsStore'
@@ -7,6 +7,7 @@ import { comfyui } from '../services/comfyui'
 import { importAsset } from '../services/fileSystem'
 import { canImportGifMedia, importGifAsset, isGifFilename } from '../services/gifImport'
 import { getVideoDurationPresets } from '../config/generateWorkspaceConfig'
+import MyComputerGeneratePanel from './MyComputerGeneratePanel'
 
 // Cinematography categories and options for filmmakers
 const SHOT_CATEGORIES = {
@@ -156,7 +157,7 @@ function CinematographyTags({ onAddTag, selectedTags, onRemoveTag }) {
 
 function GeneratePanel() {
   // Sub-tab state
-  const [activeSubTab, setActiveSubTab] = useState('video') // 'video' or 'audio'
+  const [activeSubTab, setActiveSubTab] = useState('video') // 'video', 'audio', or 'mycomputer'
   
   // ComfyUI hook
   const { 
@@ -398,11 +399,25 @@ function GeneratePanel() {
           <Music className="w-4 h-4" />
           <span className="text-xs font-medium">Audio</span>
         </button>
+        <button
+          onClick={() => setActiveSubTab('mycomputer')}
+          className={`flex items-center gap-1.5 px-3 py-2 border-b-2 transition-colors ${
+            activeSubTab === 'mycomputer'
+              ? 'border-sf-accent text-sf-text-primary'
+              : 'border-transparent text-sf-text-muted hover:text-sf-text-secondary'
+          }`}
+          title="Generate through El Monstruo’s sovereign media control plane"
+        >
+          <ShieldCheck className="w-4 h-4" />
+          <span className="text-xs font-medium">Monstruo</span>
+        </button>
       </div>
 
       {/* Content - Vertical Layout for Left Panel */}
       <div className="flex-1 overflow-y-auto">
-        {activeSubTab === 'video' ? (
+        {activeSubTab === 'mycomputer' ? (
+          <MyComputerGeneratePanel />
+        ) : activeSubTab === 'video' ? (
           /* VIDEO GENERATION - Vertical Layout */
           <div className="p-3 space-y-4">
             {/* Prompt Section */}
