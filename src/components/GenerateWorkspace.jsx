@@ -28,6 +28,7 @@ import {
   loadImportedWorkflowsFromDisk,
 } from '../config/importedWorkflowRegistry'
 import { applyImportedWorkflowBindings } from '../services/importedWorkflowBindings'
+import { buildCalibrationArtifactMetadata } from '../services/workflowCalibration'
 import { fetchComfyTemplateCatalog } from '../services/comfyTemplateCatalog'
 import { importComfyTemplate, reimportImportedWorkflow } from '../services/templateImporter'
 import { COMFY_PARTNER_KEY_CHANGED_EVENT } from '../services/comfyPartnerAuth'
@@ -14161,6 +14162,11 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         let importedEntry = getImportedWorkflowEntry(importedWorkflowId)
         let manifest = importedEntry?.manifest || null
         const settings = detail.generationSettings || {}
+        const calibrationProfile = detail.calibrationProfile || settings.calibrationProfile || null
+        const calibrationPatch = detail.calibrationPatch || settings.calibrationPatch || calibrationProfile?.calibrationPatch || null
+        const sourceFrameTimeSeconds = finiteOrNull(
+          detail.sourceFrameTimeSeconds ?? detail.frameTime ?? settings.sourceFrameTimeSeconds
+        ) ?? 0
         const prompt = String(detail.prompt ?? settings.prompt ?? fullPrompt ?? '').trim()
         const negativePromptText = String(detail.negativePrompt ?? settings.negativePrompt ?? negativePrompt ?? '').trim()
         const sourceDuration = positiveOrNull(detail.sourceClip?.duration ?? detail.source?.sourceClip?.duration ?? sourceAsset.duration)
@@ -14195,6 +14201,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           },
           imported: Boolean(importedEntry && !importedEntry.conversionIncomplete),
           importedWorkflowId,
+          sourceFrameTimeSeconds,
           sourceAsset: {
             id: sourceAsset.id,
             name: sourceAsset.name,
@@ -14210,6 +14217,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           fps: requestedFps,
           resolution: requestedResolution,
           templateParameters: requestedTemplateParameters,
+          calibrationProfile: calibrationProfile || undefined,
+          calibrationPatch: calibrationPatch || undefined,
           willRefreshParameterBindings: Boolean(needsParameterBindings),
           manifest: importedEntry ? {
             runnable: importedEntry.manifest?.runnable !== false && !importedEntry.conversionIncomplete,
@@ -14326,6 +14335,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           inputAssetId: sourceAsset.id,
           inputAssetName: sourceAsset.name || '',
           inputFromTimelineFrame: false,
+          frameTime: sourceFrameTimeSeconds,
           audioAssetId: null,
           audioAssetName: '',
           assetFieldIds: normalizedAssetFieldIds,
@@ -14338,6 +14348,25 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           fps: requestedFps,
           resolution: requestedResolution,
           templateParameters: requestedTemplateParameters,
+          calibrationProfile: calibrationProfile || undefined,
+          calibrationPatch: calibrationPatch || undefined,
+          calibrationReceipt: calibrationProfile ? {
+            ...(detail.calibrationReceipt || settings.calibrationReceipt || {}),
+            schema: 'velorn.calibration-receipt/v1',
+            status: 'prepared',
+            profileId: calibrationProfile.id,
+            profileVersion: calibrationProfile.version,
+            presetId: calibrationProfile.preset?.id || null,
+            templateName: template.name,
+            workflowSha256: calibrationPatch?.workflowSha256 || null,
+            controls: calibrationPatch?.controls || {},
+            sourceAssetId: sourceAsset.id,
+            sourceClipId: detail.sourceClip?.id || detail.source?.sourceClip?.id || null,
+            sourceFrameTimeSeconds,
+            assetFieldIds: normalizedAssetFieldIds,
+            estimatedCost: calibrationProfile.estimatedCost || null,
+            createdAt: new Date().toISOString(),
+          } : undefined,
           folderId: detail.folderId || detail.outputFolderId || null,
           status: 'queued',
           progress: 0,
@@ -15351,6 +15380,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     const jobFps = job?.fps
     const jobResolution = job?.resolution
     const jobSeed = job?.seed
+    const calibrationMetadata = buildCalibrationArtifactMetadata(job, {
+      promptId: job?.promptId || null,
+      workflowId: job?.workflowId || wfId,
+    })
     const sanitizeFolderSegment = (value, fallback = 'Workflow') => {
       const cleaned = String(value || fallback)
         .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
@@ -15435,6 +15468,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             url: assetUrl,
             prompt: jobPrompt,
             isImported: true,
+            workflowId: job?.workflowId || wfId,
+            workflowName: job?.workflowLabel || '',
+            promptId: job?.promptId || undefined,
+            calibration: calibrationMetadata || undefined,
             yolo: directorMeta || undefined,
             shortFilm: shortFilmMeta || undefined,
             folderId: assetFolderId,
@@ -15446,6 +15483,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               seed: jobSeed,
               inputAssetId: job?.inputAssetId || undefined,
               keyframeAssetId: job?.inputAssetId || shortFilmMeta?.keyframeAssetId || undefined,
+              calibration: calibrationMetadata || undefined,
             }
           }, assetFolderPath)
           if (newAsset) importedAssets.push(newAsset)
@@ -15467,6 +15505,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             type: 'video',
             url,
             prompt: jobPrompt,
+            workflowId: job?.workflowId || wfId,
+            workflowName: job?.workflowLabel || '',
+            promptId: job?.promptId || undefined,
+            calibration: calibrationMetadata || undefined,
             yolo: directorMeta || undefined,
             shortFilm: shortFilmMeta || undefined,
             folderId: getGeneratedFolderId('video', generatedFolderPath('video')),
@@ -15476,6 +15518,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               seed: jobSeed,
               inputAssetId: job?.inputAssetId || undefined,
               keyframeAssetId: job?.inputAssetId || shortFilmMeta?.keyframeAssetId || undefined,
+              calibration: calibrationMetadata || undefined,
             }
           })
           if (fallbackAsset) importedAssets.push(fallbackAsset)
@@ -16603,6 +16646,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               inputVideo: uploadedVideoFilename,
               assetFieldFilenames,
               templateParameters: job.templateParameters,
+              calibrationPatch: job.calibrationPatch,
               filenamePrefix: outputPrefix,
             })
             break
@@ -16636,7 +16680,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       // Save result to assets
       if (result) {
         updateJob(job.id, { status: 'saving', progress: 95 })
-        const saveResult = await saveGenerationResult(result, job.workflowId, job)
+        const saveResult = await saveGenerationResult(result, job.workflowId, { ...job, promptId })
         importedAssets = saveResult?.importedAssets || []
         if (!saveResult?.didImportAny) {
           throw new Error('Generation returned a stale/duplicate output; job was not imported. Queue paused for safety.')

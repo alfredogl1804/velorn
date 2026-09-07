@@ -4784,6 +4784,206 @@ function resolveTimelineGenerationBatchPlan(snapshot, args = {}) {
   }
 }
 
+const WAN_ANIMATE2_CALIBRATION_PROFILE_ID = 'wan-animate2-identity-motion-v1'
+const WAN_ANIMATE2_TEMPLATE_NAME = 'video_wan_animate2'
+const WAN_ANIMATE2_WORKFLOW_SHA256 = '772a7dfce6d5b61b8f838ec0609211a0c9b1c04a7c64e26d05f0852f147edac7'
+
+function normalizeCalibrationControl(value, fallback) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return fallback
+  return Math.min(100, Math.max(0, number))
+}
+
+function roundCalibrationNumber(value, digits = 2) {
+  const scale = 10 ** digits
+  return Math.round(value * scale) / scale
+}
+
+function buildWanAnimate2Calibration(templateName, args = {}, plan = {}) {
+  if (String(templateName || '').trim() !== WAN_ANIMATE2_TEMPLATE_NAME) return null
+  const requestedProfileId = String(args.calibrationProfileId || '').trim()
+  if (requestedProfileId && requestedProfileId !== WAN_ANIMATE2_CALIBRATION_PROFILE_ID) {
+    throw new Error(`Unknown CalibrationProfile for ${WAN_ANIMATE2_TEMPLATE_NAME}: ${requestedProfileId}`)
+  }
+
+  const requestedControls = args.calibrationControls && typeof args.calibrationControls === 'object'
+    ? args.calibrationControls
+    : {}
+  const identityFidelity = normalizeCalibrationControl(requestedControls.identityFidelity, 50)
+  const motionAdherence = normalizeCalibrationControl(requestedControls.motionAdherence, 50)
+  const choreographyLock = normalizeCalibrationControl(requestedControls.choreographyLock, 100)
+  const referenceImageStrength = roundCalibrationNumber(0.5 + identityFidelity / 100, 2)
+  const poseStrength = roundCalibrationNumber(0.5 + motionAdherence / 100, 2)
+  const poseEndPercent = roundCalibrationNumber(0.6 + (choreographyLock / 100) * 0.4, 2)
+  const seed = Number.isFinite(Number(plan.seed)) ? Number(plan.seed) : null
+
+  const patch = {
+    schema: 'velorn.calibration-patch/v1',
+    profileId: WAN_ANIMATE2_CALIBRATION_PROFILE_ID,
+    profileVersion: 1,
+    presetId: 'validated-base-localized-final-window-v1',
+    templateName: WAN_ANIMATE2_TEMPLATE_NAME,
+    workflowSha256: WAN_ANIMATE2_WORKFLOW_SHA256,
+    controls: {
+      identityFidelity,
+      motionAdherence,
+      choreographyLock,
+    },
+    operations: [
+      {
+        target: { classType: 'WanAnimate2ToVideo', occurrence: 'all' },
+        inputs: {
+          width: 480,
+          height: 848,
+          length: 81,
+          video_frame_offset: 160,
+          pose_strength: poseStrength,
+          pose_start_percent: 0,
+          pose_end_percent: poseEndPercent,
+          reference_image_strength: referenceImageStrength,
+        },
+      },
+      {
+        target: { classType: 'CreateVideo', occurrence: 'all' },
+        inputs: { fps: 24 },
+      },
+    ],
+  }
+
+  return {
+    schema: 'velorn.calibration-profile/v1',
+    id: WAN_ANIMATE2_CALIBRATION_PROFILE_ID,
+    version: 1,
+    lifecycle: 'champion',
+    executionState: 'prepared_not_rerun_this_session',
+    templateName: WAN_ANIMATE2_TEMPLATE_NAME,
+    title: 'Wan Animate 2 — Identity-Guarded Motion Retake',
+    purpose: 'Transfer the motion of a failing action clip to an approved identity reference while preserving an editable Velorn timeline.',
+    preset: {
+      id: patch.presetId,
+      label: 'Validated vertical base + localized final-window retake',
+      resolution: { width: 480, height: 848 },
+      frames: 81,
+      fps: 24,
+      durationSeconds: 3.375,
+      seed,
+    },
+    controls: [
+      {
+        id: 'identityFidelity',
+        label: 'Identity fidelity',
+        value: identityFidelity,
+        min: 0,
+        max: 100,
+        defaultValue: 50,
+        technical: { classType: 'WanAnimate2ToVideo', input: 'reference_image_strength', value: referenceImageStrength, range: [0.5, 1.5] },
+      },
+      {
+        id: 'motionAdherence',
+        label: 'Motion adherence',
+        value: motionAdherence,
+        min: 0,
+        max: 100,
+        defaultValue: 50,
+        technical: { classType: 'WanAnimate2ToVideo', input: 'pose_strength', value: poseStrength, range: [0.5, 1.5] },
+      },
+      {
+        id: 'choreographyLock',
+        label: 'Choreography lock',
+        value: choreographyLock,
+        min: 0,
+        max: 100,
+        defaultValue: 100,
+        technical: { classType: 'WanAnimate2ToVideo', input: 'pose_end_percent', value: poseEndPercent, range: [0.6, 1] },
+      },
+    ],
+    technicalParameters: [
+      { path: 'WanAnimate2ToVideo.reference_image_strength', value: referenceImageStrength, visible: true, lock: 'semantic-control' },
+      { path: 'WanAnimate2ToVideo.pose_strength', value: poseStrength, visible: true, lock: 'semantic-control' },
+      { path: 'WanAnimate2ToVideo.pose_end_percent', value: poseEndPercent, visible: true, lock: 'semantic-control' },
+      { path: 'WanAnimate2ToVideo.pose_start_percent', value: 0, visible: true, lock: 'hard' },
+      { path: 'WanAnimate2ToVideo.video_frame_offset', value: 160, visible: true, lock: 'preset' },
+      { path: 'WanAnimate2ToVideo.width', value: 480, visible: true, lock: 'preset' },
+      { path: 'WanAnimate2ToVideo.height', value: 848, visible: true, lock: 'preset' },
+      { path: 'WanAnimate2ToVideo.length', value: 81, visible: true, lock: 'preset' },
+      { path: 'CreateVideo.fps', value: 24, visible: true, lock: 'preset' },
+      { path: 'generation.seed', value: seed, visible: true, lock: 'unlocked' },
+      { path: 'template.workflowSha256', value: WAN_ANIMATE2_WORKFLOW_SHA256, visible: true, lock: 'hard' },
+    ],
+    locks: [
+      { id: 'workflow-version', mode: 'hard', value: WAN_ANIMATE2_WORKFLOW_SHA256 },
+      { id: 'model-family', mode: 'hard', value: 'wan_animate_2_int8_convrot.safetensors' },
+      { id: 'identity-input-role', mode: 'hard', value: 'primary image or source-video frame' },
+      { id: 'motion-input-role', mode: 'hard', value: 'templateInput1 video asset' },
+      { id: 'motion-window-offset', mode: 'preset', value: '160 frames from the third-shot source' },
+      { id: 'output-geometry', mode: 'preset', value: '480x848 · 81 frames · 24 fps' },
+    ],
+    checkpoint: {
+      requiredBeforeApply: true,
+      suggestedCall: {
+        tool: 'create_project_checkpoint',
+        arguments: { label: 'Before Wan Animate 2 calibrated retake', previewOnly: false },
+      },
+    },
+    undo: {
+      strategy: 'restore_project_checkpoint',
+      suggestedCall: {
+        tool: 'restore_project_checkpoint',
+        arguments: { previewOnly: true, saveProject: false },
+      },
+    },
+    estimatedCost: {
+      currency: 'USD',
+      compute: 'RunPod B200',
+      ratePerHour: 6.79,
+      estimatedMinutes: { low: 5, high: 15, status: 'unmeasured_until_final_run' },
+      estimatedJobCost: { low: 0.5658, high: 1.6975 },
+      excludes: ['pod provisioning wait', 'manual review time'],
+      requiresExplicitAuthorization: true,
+    },
+    evidence: {
+      workflowSource: 'https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_wan_animate2.json',
+      workflowSha256: WAN_ANIMATE2_WORKFLOW_SHA256,
+      upstreamNode: 'WanAnimate2ToVideo',
+      baselineArtifact: {
+        name: 'wananim2_validation.mp4',
+        resolution: '480x848',
+        frames: 81,
+        durationSeconds: 3.358,
+        vramPeakMiB: 66560,
+        reportedDigest: '897cc6686941e14eb08e4062158df004',
+        digestStatus: 'reported_32_hex_not_reverified_this_session',
+        source: 'B200 audit dated 2026-09-02',
+      },
+      currentProductDefect: 'Identity drift is perceptible in the dynamic close and turn samples of the third Seedance shot.',
+    },
+    retake: {
+      targetClipId: String(args.retakeTargetClipId || '').trim() || null,
+      timelineRange: {
+        startTimeSeconds: Number.isFinite(Number(args.retakeStartTimeSeconds)) ? Number(args.retakeStartTimeSeconds) : null,
+        durationSeconds: 3.375,
+      },
+      identitySourceClipId: plan.sourceClipId || null,
+      identitySourceFrameTimeSeconds: Number.isFinite(Number(plan.sourceFrameTimeSeconds))
+        ? Number(plan.sourceFrameTimeSeconds)
+        : null,
+      motionSourceAssetId: String(args.assetFieldIds?.templateInput1 || '').trim() || null,
+      motionFrameOffset: 160,
+      outputPlacement: {
+        tool: 'add_asset_to_timeline',
+        mode: 'review_lane',
+        destructiveReplacement: false,
+      },
+    },
+    requiredInputs: [
+      { role: 'identity_reference', field: 'primary asset', type: 'image or timeline video frame' },
+      { role: 'motion_reference', field: 'templateInput1', type: 'video' },
+      { role: 'prompt', field: 'prompt', type: 'text' },
+    ],
+    calibrationPatch: patch,
+  }
+}
+
 function buildTimelineTemplateApplyArguments(args = {}, plan = {}) {
   return {
     ...args,
@@ -4795,11 +4995,18 @@ function buildTimelineTemplateApplyArguments(args = {}, plan = {}) {
       : (plan.template?.name || args.templateName || args.templateId || args.templateTitle || args.templateQuery),
     inputAssetId: plan.source?.sourceClip?.asset?.id || args.inputAssetId || args.assetId,
     sourceClip: plan.source?.sourceClip || args.sourceClip,
+    sourceFrameTimeSeconds: plan.sourceFrameTimeSeconds ?? args.sourceFrameTimeSeconds,
+    frameTime: plan.sourceFrameTimeSeconds ?? args.frameTime,
     durationSeconds: plan.generationSettings?.durationSeconds ?? args.durationSeconds ?? args.duration,
     fps: plan.generationSettings?.fps ?? args.fps,
     resolution: plan.generationSettings?.resolution || args.resolution,
     resolutionSource: plan.generationSettings?.resolutionSource || args.resolutionSource,
     templateParameters: plan.generationSettings?.templateParameters || args.templateParameters || args.parameters,
+    calibrationProfileId: plan.calibrationProfile?.id || args.calibrationProfileId || undefined,
+    calibrationControls: plan.calibrationPatch?.controls || args.calibrationControls || undefined,
+    calibrationProfile: plan.calibrationProfile || undefined,
+    calibrationPatch: plan.calibrationPatch || undefined,
+    calibrationReceipt: plan.calibrationReceipt || undefined,
   }
 }
 
@@ -4857,14 +5064,45 @@ async function resolveTimelineTemplateGenerationPlan(snapshot, args = {}) {
     resolutionSource: args.resolutionSource ?? args.matchResolution ?? 'timeline',
   })
   const templateParameters = normalizeMcpTemplateParameterOverrides(args, resolutionPlan.resolution)
+  const sourceFrameTimeSeconds = roundTime(Math.max(
+    0,
+    toFiniteNumber(sourcePlan.frame?.timeSeconds, 0) - toFiniteNumber(sourceClip?.startTime, 0)
+  ))
   const prompt = String(args.prompt ?? sourcePlan.prompt ?? '').trim().slice(0, 5000)
   const negativePrompt = String(args.negativePrompt ?? sourcePlan.negativePrompt ?? '').trim().slice(0, 2000)
   const seed = Number(args.seed)
+  const normalizedSeed = Number.isFinite(seed) ? Math.max(0, Math.floor(seed)) : null
+  const calibrationProfile = importedWorkflowId
+    ? null
+    : buildWanAnimate2Calibration(template?.name, args, {
+      seed: normalizedSeed,
+      sourceClipId: sourceClip?.id || null,
+      sourceFrameTimeSeconds,
+    })
+  const calibrationReceipt = calibrationProfile ? {
+    schema: 'velorn.calibration-receipt/v1',
+    status: 'prepared',
+    profileId: calibrationProfile.id,
+    profileVersion: calibrationProfile.version,
+    presetId: calibrationProfile.preset?.id || null,
+    workflowSha256: calibrationProfile.calibrationPatch?.workflowSha256 || null,
+    controls: calibrationProfile.calibrationPatch?.controls || {},
+    sourceAssetId: sourceClip.asset.id,
+    sourceClipId: sourceClip.id,
+    sourceFrameTimeSeconds,
+    targetClipId: calibrationProfile.retake?.targetClipId || null,
+    retakeRange: calibrationProfile.retake?.timelineRange || null,
+    assetFieldIds: normalizePromptBatchAssetFieldIds({
+      assetFieldIds: args.assetFieldIds || args.assetFields || {},
+    }),
+    estimatedCost: calibrationProfile.estimatedCost || null,
+  } : null
 
   return {
     action: 'queue_timeline_template_generation',
     previewOnly: args.previewOnly !== false,
     importedWorkflowId: importedWorkflowId || undefined,
+    sourceFrameTimeSeconds,
     template: importedWorkflowId ? {
       importedWorkflowId,
       name: template.name,
@@ -4896,7 +5134,10 @@ async function resolveTimelineTemplateGenerationPlan(snapshot, args = {}) {
     },
     prompt,
     negativePrompt,
-    seed: Number.isFinite(seed) ? Math.max(0, Math.floor(seed)) : null,
+    seed: normalizedSeed,
+    calibrationProfile: calibrationProfile || undefined,
+    calibrationPatch: calibrationProfile?.calibrationPatch || undefined,
+    calibrationReceipt: calibrationReceipt || undefined,
     generationSettings: {
       durationSeconds: durationPlan.durationSeconds,
       durationSource: durationPlan.source,
@@ -4905,6 +5146,9 @@ async function resolveTimelineTemplateGenerationPlan(snapshot, args = {}) {
       resolutionSource: resolutionPlan.source,
       resolutionReference: resolutionPlan.reference,
       templateParameters,
+      calibrationProfile: calibrationProfile || undefined,
+      calibrationPatch: calibrationProfile?.calibrationPatch || undefined,
+      calibrationReceipt: calibrationReceipt || undefined,
     },
     catalog: catalogInfo || undefined,
   }
@@ -7010,6 +7254,14 @@ function createToolDefinitions() {
             type: 'number',
             description: 'Alias for timeSeconds.',
           },
+          retakeTargetClipId: {
+            type: 'string',
+            description: 'Optional existing timeline clip ID that the generated candidate is intended to repair. The clip selected by timeSeconds remains the identity/input source.',
+          },
+          retakeStartTimeSeconds: {
+            type: 'number',
+            description: 'Optional timeline start of the localized retake. Preview metadata only; the artifact is added to a review lane before replacement.',
+          },
           frame: {
             type: 'integer',
             description: 'Optional timeline frame number. Used when timeSeconds is omitted.',
@@ -7063,6 +7315,20 @@ function createToolDefinitions() {
             type: 'string',
             enum: ['auto', 'source', 'input', 'timeline', 'sequence', 'project', 'generate'],
             description: 'When width/height/resolution are omitted, choose which aspect to match. Defaults to timeline for template generation so vertical clips can outpaint into a 16:9 sequence.',
+          },
+          calibrationProfileId: {
+            type: 'string',
+            description: 'Optional Velorn CalibrationProfile id. The current champion is "wan-animate2-identity-motion-v1" for template video_wan_animate2.',
+          },
+          calibrationControls: {
+            type: 'object',
+            description: 'Optional semantic controls for the selected CalibrationProfile. Wan Animate 2 accepts identityFidelity, motionAdherence, and choreographyLock on a 0-100 scale.',
+            properties: {
+              identityFidelity: { type: 'number', minimum: 0, maximum: 100 },
+              motionAdherence: { type: 'number', minimum: 0, maximum: 100 },
+              choreographyLock: { type: 'number', minimum: 0, maximum: 100 },
+            },
+            additionalProperties: false,
           },
           templateParameters: {
             type: 'object',
