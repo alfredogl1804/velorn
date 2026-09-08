@@ -44,6 +44,11 @@ function matchesWorkflow(workflow, query, filterId) {
     workflow.description,
     workflow.provider,
     workflow.category,
+    workflow.operational?.capabilityLane,
+    workflow.operational?.evidenceLevel,
+    workflow.operational?.availability,
+    workflow.operational?.sovereignty,
+    workflow.operational?.evidenceLabel,
     ...(workflow.tags || []),
   ].join(' ').toLowerCase()
 

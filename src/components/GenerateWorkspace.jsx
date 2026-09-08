@@ -81,6 +81,10 @@ import {
   getWorkflowManifestByWorkflowId,
 } from '../config/generateWorkflowCatalog'
 import {
+  enrichWorkflowWithOperationalMetadata,
+  mergeWorkflowRuntimeReadiness,
+} from '../config/workflowPortfolio'
+import {
   ACTIVE_JOB_STATUSES,
   CATEGORY_ORDER,
   CUSTOM_AD_KEYFRAME_WORKFLOW_ID,
@@ -4389,7 +4393,9 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             ? (workflow.route === 'local' || workflow.route === 'cloud')
             : workflow.route === workflowRoute)
     ))
-    if (activeWorkflowBrowserMode !== 'generate') return curated
+    if (activeWorkflowBrowserMode !== 'generate') {
+      return curated.map(enrichWorkflowWithOperationalMetadata)
+    }
     const imported = getImportedManifests().filter((manifest) => (
       !manifest.hidden
         && manifest.mode === 'generate'
@@ -4397,7 +4403,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           ? (manifest.route === 'local' || manifest.route === 'cloud')
           : manifest.route === workflowRoute)
     ))
-    return [...curated, ...imported]
+    return [...curated, ...imported].map(enrichWorkflowWithOperationalMetadata)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- importedWorkflowsVersion invalidates the registry lookup
   }, [activeWorkflowBrowserMode, workflowRoute, importedWorkflowsVersion])
   const selectedWorkflowManifest = useMemo(() => (
@@ -4410,6 +4416,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       || visibleWorkflowManifests[0]
       || null
   ), [selectedWorkflowManifestId, visibleWorkflowManifests, workflowId])
+  const selectedOperationalWorkflow = useMemo(
+    () => mergeWorkflowRuntimeReadiness(selectedWorkflowManifest, dependencyCheck),
+    [dependencyCheck, selectedWorkflowManifest]
+  )
 
   useEffect(() => {
     const parameterFields = (selectedWorkflowManifest?.fields || [])
@@ -17092,7 +17102,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                   )
                 ) : (
                   <WorkflowDetail
-                    workflow={selectedWorkflowManifest}
+                    workflow={selectedOperationalWorkflow}
                     values={workflowDetailValues}
                     actions={workflowDetailActions}
                     setup={workflowSetupFlow}

@@ -102,6 +102,9 @@ export default function WorkflowDetail({
   }
 
   const queueLabel = `Queue ${workflow.outputType === 'audio' ? 'Audio' : workflow.outputType === 'image' ? 'Image' : 'Video'}`
+  const operational = workflow.operational && typeof workflow.operational === 'object'
+    ? workflow.operational
+    : null
   // Imported templates can pre-download their dependencies before they are runnable.
   const setupMode = (workflow.runnable || workflow.imported) && setup ? setup.mode : 'hidden'
   const setupItems = setup?.items || []
@@ -220,6 +223,44 @@ export default function WorkflowDetail({
             {workflow.runnable ? 'Runnable' : 'Preview only'}
           </span>
         </div>
+
+        {operational && (
+          <div className="mb-4 rounded-xl border border-sf-dark-700 bg-sf-dark-800/60 p-3">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.1em]">
+              <span className="rounded-full border border-sf-accent/30 bg-sf-accent/10 px-2 py-0.5 text-sf-accent">
+                {String(operational.evidenceLevel || 'DISCOVERABLE').replaceAll('_', ' ')}
+              </span>
+              <span className="rounded-full border border-sf-dark-600 px-2 py-0.5 text-sf-text-secondary">
+                {operational.capabilityLane}
+              </span>
+              <span className="rounded-full border border-sf-dark-600 px-2 py-0.5 text-sf-text-secondary">
+                {operational.sovereignty}
+              </span>
+            </div>
+            <div className="mt-2 grid gap-2 text-[11px] md:grid-cols-2">
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-sf-text-muted">Availability</div>
+                <div className="mt-0.5 text-sf-text-primary">{operational.availability}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-sf-text-muted">Evidence</div>
+                <div className="mt-0.5 text-sf-text-primary">{operational.evidenceLabel}</div>
+              </div>
+            </div>
+            {operational.qualityObservation && (
+              <div className="mt-2 text-[11px] text-sf-text-secondary">
+                <span className="font-semibold text-sf-text-primary">Observed quality: </span>
+                {operational.qualityObservation}
+              </div>
+            )}
+            {operational.limitation && (
+              <div className="mt-1 text-[11px] text-sf-text-muted">
+                <span className="font-semibold text-sf-text-secondary">Limitation: </span>
+                {operational.limitation}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-3">
           {(workflow.fields || []).map((field) => (
