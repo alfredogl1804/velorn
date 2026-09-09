@@ -75,6 +75,52 @@ test('marks frontier templates blocked without inflating installed weights into 
   assert.match(trellis.limitation, /weights.*absent/i)
 })
 
+test('keeps audio product evidence narrower than the exact Velorn route', () => {
+  const elevenLabs = getWorkflowOperationalMetadata({
+    id: 'elevenlabs-tts',
+    workflowId: 'elevenlabs-tts',
+    route: 'cloud',
+    category: 'audio',
+    provider: 'ElevenLabs',
+    runnable: true,
+  })
+  const music = getWorkflowOperationalMetadata({
+    id: 'music-gen',
+    workflowId: 'music-gen',
+    route: 'local',
+    category: 'audio',
+    provider: 'Local',
+    runnable: true,
+  })
+
+  assert.equal(elevenLabs.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
+  assert.equal(elevenLabs.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED)
+  assert.match(elevenLabs.limitation, /exact bundled workflow.*current receipt/i)
+  assert.equal(music.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED)
+  assert.match(music.limitation, /No durable ACE-Step weights were present/i)
+})
+
+test('keeps provider matte proof separate from official Bria template execution', () => {
+  const matte = getComfyTemplateOperationalMetadata({
+    name: 'api_bria_remove_video_background_transparent',
+    categoryLabel: 'Video',
+    openSource: false,
+  })
+  const soundEffects = getComfyTemplateOperationalMetadata({
+    name: 'api_elevenlabs_text_to_sound_effects',
+    categoryLabel: 'Audio',
+    openSource: false,
+  })
+
+  assert.equal(matte.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
+  assert.equal(matte.modelEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
+  assert.equal(matte.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(matte.limitation, /not the exact official Bria template route/i)
+  assert.equal(soundEffects.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.FRONTIER_CANDIDATE)
+  assert.equal(soundEffects.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(soundEffects.limitation, /No exact SFX artifact/i)
+})
+
 test('leaves unknown official templates unassessed instead of assigning a winner by default', () => {
   const unknown = getComfyTemplateOperationalMetadata({
     name: 'future-template',
