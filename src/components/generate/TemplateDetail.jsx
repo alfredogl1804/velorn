@@ -48,6 +48,11 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
   if (!template) return null
 
   const coverIsVideo = /\.(mp4|webm|mov)(\?|#|$)/i.test(String(template.thumbnailUrl || ''))
+  const operational = template.operational || null
+  const portfolioRole = String(operational?.portfolioRole || '')
+  const portfolioRoleLabel = portfolioRole && portfolioRole !== 'UNASSESSED'
+    ? portfolioRole.replaceAll('_', ' ')
+    : ''
 
   const handleOpenInComfy = async () => {
     if (openComfyState.busy) return
@@ -138,6 +143,26 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
             <MetaTile label="Popularity" value={formatUsageCount(template.usage)} />
             <MetaTile label="Updated" value={template.date} />
           </div>
+
+          {operational && portfolioRoleLabel && (
+            <div className="mt-4 rounded-xl border border-emerald-300/20 bg-emerald-400/5 p-3">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <MetaTile label="Portfolio" value={portfolioRoleLabel} />
+                <MetaTile label="Lane" value={operational.capabilityLane} />
+                <MetaTile label="Model evidence" value={operational.modelEvidenceLevel || operational.evidenceLevel} />
+                <MetaTile label="Exact route" value={operational.routeEvidenceLevel || operational.evidenceLevel} />
+              </div>
+              <div className="mt-3 text-[11px] leading-relaxed text-sf-text-secondary">
+                <div><span className="font-semibold text-sf-text-primary">Evidence:</span> {operational.evidenceLabel}</div>
+                {operational.qualityObservation && (
+                  <div className="mt-1"><span className="font-semibold text-sf-text-primary">Observed quality:</span> {operational.qualityObservation}</div>
+                )}
+                {operational.limitation && (
+                  <div className="mt-1 text-amber-200/90"><span className="font-semibold">Limitation:</span> {operational.limitation}</div>
+                )}
+              </div>
+            </div>
+          )}
 
           {template.models.length > 0 && (
             <div className="mt-4">

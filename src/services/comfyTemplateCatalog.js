@@ -1,3 +1,5 @@
+import { getComfyTemplateOperationalMetadata } from '../config/workflowPortfolio.js'
+
 const TEMPLATE_REPO = 'Comfy-Org/workflow_templates'
 const TEMPLATE_INDEX_URL = `https://raw.githubusercontent.com/${TEMPLATE_REPO}/main/templates/index.json`
 // jsDelivr fronts the repo with a real CDN — right for thumbnails (many small
@@ -48,7 +50,7 @@ function buildThumbnailUrl(template) {
 function normalizeTemplate(rawTemplate, categoryId, categoryLabel) {
   const name = String(rawTemplate?.name || '').trim()
   if (!name) return null
-  return {
+  const normalized = {
     name,
     title: String(rawTemplate?.title || name).trim(),
     description: String(rawTemplate?.description || '').trim(),
@@ -68,6 +70,10 @@ function normalizeTemplate(rawTemplate, categoryId, categoryLabel) {
     thumbnailUrl: buildThumbnailUrl(rawTemplate),
     workflowUrl: `${TEMPLATE_RAW_BASE}templates/${name}.json`,
     sourceUrl: `${TEMPLATE_GITHUB_BLOB_BASE}templates/${name}.json`,
+  }
+  return {
+    ...normalized,
+    operational: getComfyTemplateOperationalMetadata(normalized),
   }
 }
 

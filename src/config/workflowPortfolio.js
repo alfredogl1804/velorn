@@ -6,6 +6,17 @@ export const WORKFLOW_EVIDENCE_LEVELS = Object.freeze({
   PRODUCT_PROVEN: 'PRODUCT_PROVEN',
 })
 
+export const WORKFLOW_PORTFOLIO_ROLES = Object.freeze({
+  CHAMPION: 'CHAMPION',
+  SPECIALIST_CHAMPION: 'SPECIALIST_CHAMPION',
+  SOVEREIGN_ALTERNATIVE: 'SOVEREIGN_ALTERNATIVE',
+  ECONOMIC_ALTERNATIVE: 'ECONOMIC_ALTERNATIVE',
+  PREMIUM_ALTERNATIVE: 'PREMIUM_ALTERNATIVE',
+  FRONTIER_CANDIDATE: 'FRONTIER_CANDIDATE',
+  FRONTIER_BLOCKED: 'FRONTIER_BLOCKED',
+  UNASSESSED: 'UNASSESSED',
+})
+
 export const WORKFLOW_CAPABILITY_LANES = Object.freeze({
   'text-to-image': 'Text to image',
   'image-edit': 'Image edit',
@@ -23,6 +34,7 @@ const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn'])
 
 const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
   'wan22-t2v': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE,
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
@@ -31,6 +43,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     limitation: 'Requires a compatible external GPU runtime; no active GPU is assumed.',
   }),
   'wan22-i2v': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE,
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
@@ -46,6 +59,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     limitation: 'The exact Velorn workflow still requires a current end-to-end product proof.',
   }),
   'ltx23-i2v': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
@@ -74,11 +88,14 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     limitation: 'No durable ACE-Step weights were present in the certified volume census.',
   }),
   'kling-o3-i2v': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE,
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
     availability: 'Cloud credentials required',
     sovereignty: 'Commercial API',
-    evidenceLabel: 'Kling family artifact verified; exact O3 workflow still needs product proof',
-    limitation: 'Provider-family evidence must not be treated as proof of this exact model version.',
+    evidenceLabel: 'Exact Kling O3 Pro model benchmarked blind on the shared identity-motion brief',
+    qualityObservation: '6.325/10 weighted: strong motion, but it replaced the requested pivot with a jump and changed the lighting.',
+    limitation: 'The benchmark proves the model through the Runway workspace, not this ComfyUI execution route.',
+    benchmark: Object.freeze({ model: 'kling-o3-pro', score: 6.325, artifact: 'candidate_b.mp4' }),
   }),
   'seedance2-r2v': Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
@@ -93,6 +110,133 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     sovereignty: 'Commercial API',
     evidenceLabel: 'Workflow is bundled; no exact product receipt was found',
     limitation: 'A current credential and end-to-end artifact are still required.',
+  }),
+})
+
+const COMFY_TEMPLATE_PORTFOLIO_OVERRIDES = Object.freeze({
+  api_nano_banana_pro: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION,
+    capabilityLane: 'Image · identity',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Nano Banana Pro won identity preservation in the blind image benchmark.',
+    qualityObservation: '8.03/10 weighted; best face, complexion, beauty mark and overall identity continuity.',
+    limitation: 'The model is proven through the Runway workspace; the official ComfyUI template still needs an exact-route artifact.',
+    benchmark: Object.freeze({ model: 'nano-banana-pro', score: 8.03, specialty: 'identity' }),
+  }),
+  api_bytedance_seedream_5_0_pro_t2i: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION,
+    capabilityLane: 'Image · balanced hero shot',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Seedream 5 won the blind balanced full-body image benchmark.',
+    qualityObservation: '8.13/10 weighted; strongest balance of anatomy, full-body composition and costume continuity.',
+    limitation: 'The exact Pro template route was not the route used for the benchmark and remains unproven.',
+    benchmark: Object.freeze({ model: 'seedream-5', score: 8.13, specialty: 'balanced_full_body' }),
+  }),
+  api_seedance2_5_i2v_1080p: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.CHAMPION,
+    capabilityLane: 'Video · identity motion',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Seedance 2.5 won the blind I2V benchmark on a shared 5 s identity-motion brief.',
+    qualityObservation: '9.55/10 weighted; preserved face, beauty mark, outfit, anatomy and scene during the controlled turn.',
+    limitation: 'The model is product-proven through the Runway workspace; the official ComfyUI template route still requires its own receipt.',
+    benchmark: Object.freeze({ model: 'seedance-2.5', score: 9.55, specialty: 'identity_motion' }),
+  }),
+  api_seedance2_5_r2v: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION,
+    capabilityLane: 'Video · multimodal reference',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Seedance 2.5 multishot/reference behavior was tested with a real 5 s product artifact.',
+    qualityObservation: 'Strong identity and shot-order obedience; continuity of background, lighting and spatial trajectory still needs repair.',
+    limitation: 'Use for planned multi-shot generation only with a downstream continuity gate.',
+  }),
+  api_seedance2_5_video_editing: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_CANDIDATE,
+    capabilityLane: 'Video · generative edit',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official Seedance 2.5 edit workflow is available; the same model family won I2V.',
+    qualityObservation: 'No exact edit artifact has passed the product gate yet.',
+    limitation: 'Do not inherit the I2V score as proof of editing quality.',
+  }),
+  api_ltx2_5_i2v: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,
+    capabilityLane: 'Video · audio-video sovereign frontier',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official LTX 2.5 workflow is available and the transformer is physically present.',
+    limitation: 'Local execution lacks the full official encoder/VAE/upscaler pack; the RunPod credential returned HTTP 403 during the authorized benchmark.',
+  }),
+  video_ltx2_3_i2v: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE,
+    capabilityLane: 'Video · sovereign I2V',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'LTX 2.3 all-in-one checkpoint and supporting VAE/upscaler are on the durable volume.',
+    limitation: 'No current benchmark artifact was produced because RunPod authentication was externally blocked.',
+  }),
+  audio_minimax_music_3: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_CANDIDATE,
+    capabilityLane: 'Audio · music',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official editable MiniMax Music 3 workflow is discoverable in the live ComfyUI catalog.',
+    limitation: 'No comparative product artifact or authenticated execution route was validated in this phase.',
+  }),
+  api_elevenlabs_text_to_speech: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE,
+    capabilityLane: 'Audio · voice',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'ElevenLabs has historical product artifacts in the ecosystem.',
+    limitation: 'The current sandbox credential returned HTTP 401 and this exact ComfyUI route remains unproven.',
+  }),
+  api_heygen_avatar_video: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE,
+    capabilityLane: 'Avatar · talking presenter',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
+    modelEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN,
+    routeEvidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'HeyGen avatar output exists as historical product evidence.',
+    limitation: 'The exact official ComfyUI template route needs a current authenticated artifact.',
+  }),
+  api_sync_so_lip_sync_video: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,
+    capabilityLane: 'Avatar · lipsync',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official Sync 3 lipsync workflow is discoverable.',
+    limitation: 'No current credential, comparable benchmark or product receipt was validated.',
+  }),
+  '3d_pixal3d_trellis2_image_to_model': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,
+    capabilityLane: '3D · image to model',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official Pixal3D + TRELLIS.2 editable workflow is discoverable.',
+    limitation: 'TRELLIS.2 weights and a product artifact are absent from the durable runtime.',
+  }),
+  api_topaz_astra2: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_CANDIDATE,
+    capabilityLane: 'Finishing · premium upscale',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official Topaz Astra 2 workflow is discoverable.',
+    limitation: 'The tested generic 4K upscaler increased resolution but was rejected for premium finishing; Astra 2 itself remains unbenchmarked.',
+  }),
+  api_bria_remove_video_background_transparent: Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_CANDIDATE,
+    capabilityLane: 'VFX · video matte',
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    evidenceLabel: 'Official transparent-background Bria workflow is discoverable.',
+    limitation: 'The tested Runway matte preserved alpha but showed temporally unstable hair, hand and skirt edges; Bria remains unbenchmarked.',
   }),
 })
 
@@ -125,6 +269,7 @@ export function getWorkflowOperationalMetadata(workflow) {
   const category = String(workflow?.category || 'utility').trim()
   return {
     capabilityLane: WORKFLOW_CAPABILITY_LANES[category] || category || 'Utility',
+    portfolioRole: override.portfolioRole || WORKFLOW_PORTFOLIO_ROLES.UNASSESSED,
     evidenceLevel: override.evidenceLevel || inferEvidenceLevel(workflow),
     availability: override.availability || inferAvailability(workflow),
     sovereignty: override.sovereignty || inferSovereignty(workflow),
@@ -134,11 +279,29 @@ export function getWorkflowOperationalMetadata(workflow) {
         : 'No exact product receipt is attached to this workflow yet'
     ),
     qualityObservation: override.qualityObservation || '',
+    benchmark: override.benchmark || null,
     limitation: override.limitation || (
       workflow?.runnable
         ? 'Runtime readiness is verified when the workflow is selected.'
         : 'Workflow graph or execution bindings are not complete.'
     ),
+  }
+}
+
+export function getComfyTemplateOperationalMetadata(template) {
+  const templateName = String(template?.name || '').trim()
+  const override = COMFY_TEMPLATE_PORTFOLIO_OVERRIDES[templateName] || {}
+  return {
+    capabilityLane: override.capabilityLane || template?.categoryLabel || 'ComfyUI template',
+    portfolioRole: override.portfolioRole || WORKFLOW_PORTFOLIO_ROLES.UNASSESSED,
+    evidenceLevel: override.evidenceLevel || WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    modelEvidenceLevel: override.modelEvidenceLevel || override.evidenceLevel || WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    routeEvidenceLevel: override.routeEvidenceLevel || WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    sovereignty: template?.openSource ? 'Open source workflow' : 'Commercial API',
+    evidenceLabel: override.evidenceLabel || 'Official ComfyUI template is discoverable; no exact product receipt is attached.',
+    qualityObservation: override.qualityObservation || '',
+    limitation: override.limitation || 'Import, dependency readiness and an exact-route artifact are still required.',
+    benchmark: override.benchmark || null,
   }
 }
 

@@ -65,6 +65,14 @@ function matchesTemplate(template, query, filterId, sourceId) {
     template.title,
     template.description,
     template.name,
+    template.operational?.portfolioRole,
+    template.operational?.capabilityLane,
+    template.operational?.evidenceLevel,
+    template.operational?.modelEvidenceLevel,
+    template.operational?.routeEvidenceLevel,
+    template.operational?.sovereignty,
+    template.operational?.evidenceLabel,
+    template.operational?.limitation,
     ...(template.tags || []),
     ...(template.models || []),
   ].join(' ').toLowerCase()
@@ -79,13 +87,50 @@ const TEMPLATE_SOURCE_OPTIONS = Object.freeze([
 ])
 
 const TEMPLATE_SORT_OPTIONS = Object.freeze([
+  { id: 'portfolio', label: 'Portfolio' },
   { id: 'popular', label: 'Most used' },
   { id: 'newest', label: 'Newest' },
 ])
 
+const TEMPLATE_PORTFOLIO_OPTIONS = Object.freeze([
+  { id: 'all', label: 'All roles' },
+  { id: 'champions', label: 'Champions' },
+  { id: 'alternatives', label: 'Alternatives' },
+  { id: 'blocked', label: 'Blocked frontier' },
+  { id: 'unassessed', label: 'Unassessed' },
+])
+
+const TEMPLATE_PORTFOLIO_RANK = Object.freeze({
+  CHAMPION: 0,
+  SPECIALIST_CHAMPION: 0,
+  SOVEREIGN_ALTERNATIVE: 1,
+  ECONOMIC_ALTERNATIVE: 1,
+  PREMIUM_ALTERNATIVE: 1,
+  FRONTIER_CANDIDATE: 2,
+  FRONTIER_BLOCKED: 3,
+  UNASSESSED: 4,
+})
+
+function matchesTemplatePortfolio(template, filterId) {
+  if (filterId === 'all') return true
+  const role = String(template.operational?.portfolioRole || 'UNASSESSED')
+  if (filterId === 'champions') return role === 'CHAMPION' || role === 'SPECIALIST_CHAMPION'
+  if (filterId === 'alternatives') return role.endsWith('_ALTERNATIVE') || role === 'FRONTIER_CANDIDATE'
+  if (filterId === 'blocked') return role === 'FRONTIER_BLOCKED'
+  return role === 'UNASSESSED'
+}
+
 const TEMPLATE_COLLAPSE_LIMIT = 10
 
 function compareTemplates(a, b, sortId) {
+  if (sortId === 'portfolio') {
+    const aRank = TEMPLATE_PORTFOLIO_RANK[a.operational?.portfolioRole] ?? TEMPLATE_PORTFOLIO_RANK.UNASSESSED
+    const bRank = TEMPLATE_PORTFOLIO_RANK[b.operational?.portfolioRole] ?? TEMPLATE_PORTFOLIO_RANK.UNASSESSED
+    if (aRank !== bRank) return aRank - bRank
+    const aScore = Number(a.operational?.benchmark?.score) || 0
+    const bScore = Number(b.operational?.benchmark?.score) || 0
+    if (aScore !== bScore) return bScore - aScore
+  }
   if (sortId === 'newest') {
     // Dates are ISO strings, so plain string compare orders correctly.
     const byDate = String(b.date || '').localeCompare(String(a.date || ''))
@@ -117,8 +162,9 @@ export default function WorkflowBrowser({
   const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [filterId, setFilterId] = useState('all')
-  const [templateSort, setTemplateSort] = useState('popular')
+  const [templateSort, setTemplateSort] = useState('portfolio')
   const [templateSource, setTemplateSource] = useState('all')
+  const [templatePortfolio, setTemplatePortfolio] = useState('all')
   const [expandedTemplateCategories, setExpandedTemplateCategories] = useState(() => new Set())
   const isCreateLauncher = variant === 'create-launcher'
   const isTemplatesRoute = !isCreateLauncher && route === GENERATE_WORKFLOW_ROUTES.templates
@@ -254,9 +300,10 @@ export default function WorkflowBrowser({
     isTemplatesRoute
       ? templateCatalog.templates.filter((template) => (
         matchesTemplate(template, normalizedQuery, activeFilterId, templateSource)
+        && matchesTemplatePortfolio(template, templatePortfolio)
       ))
       : []
-  ), [activeFilterId, isTemplatesRoute, normalizedQuery, templateCatalog.templates, templateSource])
+  ), [activeFilterId, isTemplatesRoute, normalizedQuery, templateCatalog.templates, templatePortfolio, templateSource])
 
   const groupedTemplates = useMemo(() => {
     const groups = new Map()
@@ -374,6 +421,22 @@ export default function WorkflowBrowser({
             ))}
           </div>
           <div className="flex items-center gap-1 rounded-lg border border-sf-dark-700 bg-sf-dark-800 p-0.5">
+            {TEMPLATE_PORTFOLIO_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setTemplatePortfolio(option.id)}
+                className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  templatePortfolio === option.id
+                    ? 'bg-sf-dark-600 text-sf-text-primary'
+                    : 'text-sf-text-muted hover:text-sf-text-primary'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-sf-dark-700 bg-sf-dark-800 p-0.5">
             {TEMPLATE_SORT_OPTIONS.map((option) => (
               <button
                 key={option.id}
@@ -385,7 +448,7 @@ export default function WorkflowBrowser({
                     : 'text-sf-text-muted hover:text-sf-text-primary'
                 }`}
               >
-                {t(`generate.browser.sort.${option.id}`)}
+                {option.label}
               </button>
             ))}
           </div>
