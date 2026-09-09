@@ -149,7 +149,10 @@ test('exposes benchmarked champions through the existing template catalog MCP to
     forceRefresh: true,
   })
   const searchBody = parseTextResult(searchResult)
-  assert.equal(searchBody.templates[0].name, 'api_seedance2_5_i2v_1080p')
+  assert.equal(searchBody.templates[0].name, 'video_wan_animate2')
+  assert.equal(searchBody.templates[0].operational.routeEvidenceLevel, 'PRODUCT_PROVEN')
+  assert.equal(searchBody.templates[1].name, 'api_seedance2_5_i2v_1080p')
+  assert.equal(searchBody.templates[1].operational.routeEvidenceLevel, 'DISCOVERABLE')
 
   const equalizerResult = await server.callTool('list_comfyui_templates', {
     query: 'Wan Animate 2',
@@ -165,6 +168,40 @@ test('exposes benchmarked champions through the existing template catalog MCP to
     'motionAdherence',
     'choreographyLock',
   ])
+})
+
+test('publishes native mastering controls and counts text clips in export readiness', async () => {
+  const server = createComfyStudioMcpServer()
+  const exportTool = server.tools.find((tool) => tool.name === 'export_timeline')
+  assert.equal(exportTool.inputSchema.properties.normalizeAudio.type, 'boolean')
+  assert.equal(exportTool.inputSchema.properties.loudnessTarget.type, 'number')
+
+  const snapshot = createSnapshot()
+  snapshot.currentTimeline.clips.push({
+    id: 'clip-title',
+    trackId: 'video-1',
+    assetId: null,
+    type: 'text',
+    startTime: 0,
+    duration: 2,
+    enabled: true,
+    textProperties: { text: 'VELORN MULTIMEDIA SPECIALIST' },
+  })
+  server.updateSnapshot(snapshot)
+
+  const readiness = parseTextResult(await server.callTool('check_export_readiness', {
+    target: 'h264_vertical_1080',
+    range: 'custom',
+    startSeconds: 0,
+    endSeconds: 20,
+    includeAudio: true,
+  }))
+
+  assert.equal(readiness.ready, true)
+  assert.equal(readiness.counts.exportableVisualClipCount, 3)
+  assert.equal(readiness.counts.missingAssetClipCount, 0)
+  assert.equal(readiness.deliveryTarget.width, 1080)
+  assert.equal(readiness.deliveryTarget.height, 1920)
 })
 
 test('routes explainably by intent, quality, exact-route proof and sovereignty without authorizing execution', async (t) => {

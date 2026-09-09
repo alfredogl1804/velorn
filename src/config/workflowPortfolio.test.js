@@ -28,11 +28,24 @@ test('keeps exact product proof narrower than provider-family evidence', () => {
     provider: 'Local',
     runnable: true,
   })
+  const wanT2v = getWorkflowOperationalMetadata({
+    id: 'wan22-t2v',
+    workflowId: 'wan22-t2v',
+    route: 'local',
+    category: 'text-to-video',
+    provider: 'Local',
+    runnable: true,
+  })
 
   assert.equal(seedance.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED)
   assert.match(seedance.evidenceLabel, /exact 2\.0 workflow still needs product proof/i)
   assert.match(seedance.limitation, /another Seedance version\/provider route/i)
-  assert.equal(wan.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
+  assert.equal(wan.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(wan.evidenceLabel, /exact bundled workflow hash is recorded as BLOCKED/i)
+  assert.match(wan.limitation, /route proof cannot be inherited|evidence cannot be transferred/i)
+  assert.equal(wanT2v.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(wanT2v.evidenceLabel, /distinct B200 wan_t2v_stable_v1 route/i)
+  assert.match(wanT2v.limitation, /route proof cannot be inherited/i)
 })
 
 test('keeps benchmarked model evidence separate from the exact ComfyUI route', () => {
@@ -53,6 +66,27 @@ test('keeps benchmarked model evidence separate from the exact ComfyUI route', (
   assert.equal(seedance.benchmark.score, 9.55)
   assert.equal(nanoBanana.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION)
   assert.equal(nanoBanana.benchmark.specialty, 'identity')
+})
+
+test('recognizes the exact Wan Animate 2 product route without inflating adjacent model routes', () => {
+  const wanAnimate = getComfyTemplateOperationalMetadata({
+    name: 'video_wan_animate2',
+    categoryLabel: 'Video',
+    openSource: true,
+  })
+  const seedance = getComfyTemplateOperationalMetadata({
+    name: 'api_seedance2_5_i2v_1080p',
+    categoryLabel: 'Video',
+    openSource: false,
+  })
+
+  assert.equal(wanAnimate.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION)
+  assert.equal(wanAnimate.modelEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
+  assert.equal(wanAnimate.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
+  assert.match(wanAnimate.qualityObservation, /reference image strength 1\.35.*pose strength 1\.25/i)
+  assert.match(wanAnimate.limitation, /Full-frame output did not preserve/i)
+  assert.equal(seedance.modelEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
+  assert.equal(seedance.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
 })
 
 test('marks frontier templates blocked without inflating installed weights into execution proof', () => {
@@ -95,7 +129,7 @@ test('keeps audio product evidence narrower than the exact Velorn route', () => 
 
   assert.equal(elevenLabs.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
   assert.equal(elevenLabs.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED)
-  assert.match(elevenLabs.limitation, /exact bundled workflow.*current receipt/i)
+  assert.match(elevenLabs.limitation, /authorization does not prove this exact bundled workflow.*artifact and receipt/i)
   assert.equal(music.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED)
   assert.match(music.limitation, /No durable ACE-Step weights were present/i)
 })
@@ -130,6 +164,11 @@ test('keeps finishing and 3D routes honest about installed assets and exact prod
     provider: 'Local',
     runnable: true,
   })
+  const officialInterpolation = getComfyTemplateOperationalMetadata({
+    name: 'utility_video_frame_interpolation',
+    categoryLabel: 'Video',
+    openSource: true,
+  })
   const topaz = getComfyTemplateOperationalMetadata({
     name: 'api_topaz_astra2',
     categoryLabel: 'Video',
@@ -147,7 +186,12 @@ test('keeps finishing and 3D routes honest about installed assets and exact prod
   })
 
   assert.equal(interpolation.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE)
-  assert.equal(interpolation.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.INSTALLED)
+  assert.equal(interpolation.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(interpolation.evidenceLabel, /RIFE 4\.26 assets are installed.*bundled graph references FILM/i)
+  assert.match(interpolation.limitation, /FILM weights were not found/i)
+  assert.equal(officialInterpolation.modelEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.INSTALLED)
+  assert.equal(officialInterpolation.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(officialInterpolation.limitation, /RIFE requires a separate exact graph/i)
   assert.equal(topaz.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
   assert.match(topaz.limitation, /Astra 2 itself remains unbenchmarked/i)
   assert.equal(meshy.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
@@ -189,6 +233,8 @@ test('enriches official Comfy templates without changing their import identity',
     models: ['Wan Animate 2'],
     openSource: true,
   }] }])
+  assert.equal(wanIndex.templates[0].operational.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.SPECIALIST_CHAMPION)
+  assert.equal(wanIndex.templates[0].operational.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
   assert.equal(wanIndex.templates[0].calibrationProfiles.length, 1)
   assert.equal(wanIndex.templates[0].calibrationProfiles[0].id, 'wan-animate2-identity-motion-v1')
   assert.equal(wanIndex.templates[0].calibrationProfiles[0].routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)

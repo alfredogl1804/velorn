@@ -9,6 +9,7 @@ const {
   summarizeCalibrationProfilesForTemplate,
 } = require('./workflowCalibrationProfiles.cjs')
 const { recommendWorkflowRoutes } = require('./workflowRouteRecommendation.cjs')
+const { buildSpecialistPublication } = require('./specialistCapabilityManifest.cjs')
 
 const DEFAULT_MCP_PORT = 19790
 const MCP_PROTOCOL_VERSION = '2024-11-05'
@@ -3563,7 +3564,9 @@ function checkExportReadiness(snapshot, args = {}) {
   const visualTracks = tracks.filter((track) => track?.type !== 'audio')
   const audioTracks = tracks.filter((track) => track?.type === 'audio')
   const activeClips = clips.filter((clip) => clip?.enabled !== false)
-  const exportableVisualClips = activeClips.filter((clip) => isAssetBackedClip(clip) && clip?.type !== 'audio')
+  const exportableVisualClips = activeClips.filter((clip) => (
+    clip?.type === 'text' || (isAssetBackedClip(clip) && clip?.type !== 'audio')
+  ))
   const audioClips = activeClips.filter((clip) => clip?.type === 'audio' || (clip?.type === 'video' && clip?.assetId))
   const missingAssetClips = exportableVisualClips.filter((clip) => clip.assetId && !assetIds.has(clip.assetId)).map(clipRef)
   const disabledClips = clips.filter((clip) => clip?.enabled === false).map(clipRef)
@@ -10615,6 +10618,14 @@ function createToolDefinitions() {
             type: 'number',
             description: 'CRF quality value. Defaults to 18 for H.264 delivery.',
           },
+          normalizeAudio: {
+            type: 'boolean',
+            description: 'Normalize final program loudness during export. Defaults to false.',
+          },
+          loudnessTarget: {
+            type: 'number',
+            description: 'Integrated loudness target in LUFS when normalizeAudio is true. Defaults to -14.',
+          },
           previewOnly: {
             type: 'boolean',
             description: 'When true, returns the export plan without starting the export.',
@@ -11670,7 +11681,11 @@ class ComfyStudioMcpServer {
         refresh: args.refresh === true,
       })
       if (result?.success === false) return errorResult(result.error || 'Could not list Velorn workflows.')
-      return textResult(result)
+      const publication = buildSpecialistPublication(result, { serverVersion: this.version })
+      return textResult({
+        ...result,
+        ...publication,
+      })
     } catch (error) {
       return errorResult(`Could not list Velorn workflows: ${error?.message || String(error)}`)
     }
