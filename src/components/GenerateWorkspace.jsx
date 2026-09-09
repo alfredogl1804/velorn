@@ -28,6 +28,8 @@ import {
   loadImportedWorkflowsFromDisk,
 } from '../config/importedWorkflowRegistry'
 import { applyImportedWorkflowBindings } from '../services/importedWorkflowBindings'
+import { buildCalibrationArtifactMetadata } from '../services/workflowCalibration'
+import workflowCalibrationProfiles from '../../electron/workflowCalibrationProfiles.cjs'
 import { fetchComfyTemplateCatalog } from '../services/comfyTemplateCatalog'
 import { importComfyTemplate, reimportImportedWorkflow } from '../services/templateImporter'
 import { COMFY_PARTNER_KEY_CHANGED_EVENT } from '../services/comfyPartnerAuth'
@@ -79,6 +81,10 @@ import {
   GENERATE_WORKFLOW_CATALOG,
   getWorkflowManifestByWorkflowId,
 } from '../config/generateWorkflowCatalog'
+import {
+  enrichWorkflowWithOperationalMetadata,
+  mergeWorkflowRuntimeReadiness,
+} from '../config/workflowPortfolio'
 import {
   ACTIVE_JOB_STATUSES,
   CATEGORY_ORDER,
@@ -3474,6 +3480,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   })
   const [workflowDetailOpen, setWorkflowDetailOpen] = useState(false)
   const [selectedComfyTemplate, setSelectedComfyTemplate] = useState(null)
+  const [templateImportState, setTemplateImportState] = useState({ busy: false, message: '', error: '' })
   const [importedWorkflowsVersion, setImportedWorkflowsVersion] = useState(0)
   const [latestWorkflowPreview, setLatestWorkflowPreview] = useState(null)
 
@@ -3491,6 +3498,11 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   const [templateParameterValues, setTemplateParameterValues] = useState(
     persistedState?.templateParameterValues && typeof persistedState.templateParameterValues === 'object'
       ? persistedState.templateParameterValues
+      : {}
+  )
+  const [calibrationControlValues, setCalibrationControlValues] = useState(
+    persistedState?.calibrationControlValues && typeof persistedState.calibrationControlValues === 'object'
+      ? persistedState.calibrationControlValues
       : {}
   )
   const [activeAssetSlotId, setActiveAssetSlotId] = useState(persistedState?.activeAssetSlotId || 'asset')
@@ -3991,6 +4003,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         selectedAudioAssetId,
         selectedAssetFieldIds,
         templateParameterValues,
+        calibrationControlValues,
         activeAssetSlotId,
         frameTime,
         prompt,
@@ -4084,6 +4097,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     selectedAudioAssetId,
     selectedAssetFieldIds,
     templateParameterValues,
+    calibrationControlValues,
     activeAssetSlotId,
     frameTime,
     prompt,
@@ -4388,7 +4402,9 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             ? (workflow.route === 'local' || workflow.route === 'cloud')
             : workflow.route === workflowRoute)
     ))
-    if (activeWorkflowBrowserMode !== 'generate') return curated
+    if (activeWorkflowBrowserMode !== 'generate') {
+      return curated.map(enrichWorkflowWithOperationalMetadata)
+    }
     const imported = getImportedManifests().filter((manifest) => (
       !manifest.hidden
         && manifest.mode === 'generate'
@@ -4396,7 +4412,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           ? (manifest.route === 'local' || manifest.route === 'cloud')
           : manifest.route === workflowRoute)
     ))
-    return [...curated, ...imported]
+    return [...curated, ...imported].map(enrichWorkflowWithOperationalMetadata)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- importedWorkflowsVersion invalidates the registry lookup
   }, [activeWorkflowBrowserMode, workflowRoute, importedWorkflowsVersion])
   const selectedWorkflowManifest = useMemo(() => (
@@ -4409,6 +4425,40 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       || visibleWorkflowManifests[0]
       || null
   ), [selectedWorkflowManifestId, visibleWorkflowManifests, workflowId])
+  const selectedCalibrationProfile = useMemo(() => {
+    const templateName = String(selectedWorkflowManifest?.templateName || '').trim()
+    if (!templateName) return null
+    const summaries = workflowCalibrationProfiles.summarizeCalibrationProfilesForTemplate(templateName)
+    if (summaries.length === 0) return null
+    const profileId = summaries[0].id
+    return workflowCalibrationProfiles.resolveCalibrationProfile(templateName, {
+      calibrationProfileId: profileId,
+      calibrationControls: calibrationControlValues[profileId] || {},
+      durationSeconds: duration,
+      fps,
+      resolution,
+      assetFieldIds: selectedAssetFieldIds,
+    }, {
+      seed,
+      sourceClipId: null,
+      sourceFrameTimeSeconds: frameTime,
+    })
+  }, [
+    calibrationControlValues,
+    duration,
+    fps,
+    frameTime,
+    resolution,
+    seed,
+    selectedAssetFieldIds,
+    selectedWorkflowManifest?.templateName,
+  ])
+  const selectedOperationalWorkflow = useMemo(() => {
+    const workflow = mergeWorkflowRuntimeReadiness(selectedWorkflowManifest, dependencyCheck)
+    return workflow && selectedCalibrationProfile
+      ? { ...workflow, equalizer: selectedCalibrationProfile }
+      : workflow
+  }, [dependencyCheck, selectedCalibrationProfile, selectedWorkflowManifest])
 
   useEffect(() => {
     const parameterFields = (selectedWorkflowManifest?.fields || [])
@@ -4540,6 +4590,43 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     setCategory(nextCategory)
     setWorkflowId(manifest.workflowId)
   }, [])
+
+  const handleImportOfficialTemplate = useCallback(async (template) => {
+    if (!template || templateImportState.busy) return
+    if (!isConnected) {
+      setTemplateImportState({ busy: false, message: '', error: 'Start or connect ComfyUI before importing this workflow.' })
+      return
+    }
+
+    setTemplateImportState({ busy: true, message: 'Downloading the official workflow…', error: '' })
+    try {
+      const result = await importComfyTemplate(template, {
+        onProgress: (_step, message) => {
+          if (message) setTemplateImportState({ busy: true, message, error: '' })
+        },
+      })
+      const entry = result?.entry || null
+      const manifest = entry?.manifest || null
+      if (!manifest) throw new Error('The official workflow was imported but did not produce a Generate manifest.')
+
+      setImportedWorkflowsVersion((version) => version + 1)
+      setSelectedComfyTemplate(null)
+      handleWorkflowManifestSelect(manifest)
+      setTemplateImportState({
+        busy: false,
+        message: manifest.runnable === false || entry.conversionIncomplete
+          ? 'Imported into Generate. Use Set up to install its missing dependencies.'
+          : 'Imported into Generate as an editable workflow.',
+        error: '',
+      })
+    } catch (error) {
+      setTemplateImportState({
+        busy: false,
+        message: '',
+        error: error instanceof Error ? error.message : 'Could not import this official workflow.',
+      })
+    }
+  }, [handleWorkflowManifestSelect, isConnected, templateImportState.busy])
 
   const handleWorkflowRouteChange = useCallback((nextRoute) => {
     setWorkflowRoute(nextRoute)
@@ -8035,6 +8122,23 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       audioAssetName: selectedWorkflowManifest?.requiresAudio ? (selectedAudioAsset?.name || '') : '',
       assetFieldIds,
       templateParameters: { ...(templateParameterValues || {}) },
+      calibrationProfile: selectedCalibrationProfile || undefined,
+      calibrationPatch: selectedCalibrationProfile?.calibrationPatch || undefined,
+      calibrationReceipt: selectedCalibrationProfile ? {
+        schema: 'velorn.calibration-receipt/v1',
+        status: 'prepared',
+        profileId: selectedCalibrationProfile.id,
+        profileVersion: selectedCalibrationProfile.version,
+        presetId: selectedCalibrationProfile.preset?.id || null,
+        templateName: selectedCalibrationProfile.templateName,
+        workflowSha256: selectedCalibrationProfile.calibrationPatch?.workflowSha256 || null,
+        controls: selectedCalibrationProfile.calibrationPatch?.controls || {},
+        sourceAssetId: selectedAsset?.id || null,
+        sourceFrameTimeSeconds: frameTime || 0,
+        assetFieldIds: { ...assetFieldIds },
+        estimatedCost: selectedCalibrationProfile.estimatedCost || null,
+        createdAt: new Date().toISOString(),
+      } : undefined,
       inputFromTimelineFrame: false,
       referenceAssetId1: workflowId === 'image-edit' ? referenceAssetId1 : null,
       referenceAssetId2: workflowId === 'image-edit' ? referenceAssetId2 : null,
@@ -8108,6 +8212,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     selectedAsset?.id,
     selectedAsset?.name,
     selectedAssetFieldIds,
+    selectedCalibrationProfile,
     selectedAssetFields,
     selectedAudioAsset?.id,
     selectedAudioAsset?.name,
@@ -14161,6 +14266,11 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         let importedEntry = getImportedWorkflowEntry(importedWorkflowId)
         let manifest = importedEntry?.manifest || null
         const settings = detail.generationSettings || {}
+        const calibrationProfile = detail.calibrationProfile || settings.calibrationProfile || null
+        const calibrationPatch = detail.calibrationPatch || settings.calibrationPatch || calibrationProfile?.calibrationPatch || null
+        const sourceFrameTimeSeconds = finiteOrNull(
+          detail.sourceFrameTimeSeconds ?? detail.frameTime ?? settings.sourceFrameTimeSeconds
+        ) ?? 0
         const prompt = String(detail.prompt ?? settings.prompt ?? fullPrompt ?? '').trim()
         const negativePromptText = String(detail.negativePrompt ?? settings.negativePrompt ?? negativePrompt ?? '').trim()
         const sourceDuration = positiveOrNull(detail.sourceClip?.duration ?? detail.source?.sourceClip?.duration ?? sourceAsset.duration)
@@ -14195,6 +14305,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           },
           imported: Boolean(importedEntry && !importedEntry.conversionIncomplete),
           importedWorkflowId,
+          sourceFrameTimeSeconds,
           sourceAsset: {
             id: sourceAsset.id,
             name: sourceAsset.name,
@@ -14210,6 +14321,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           fps: requestedFps,
           resolution: requestedResolution,
           templateParameters: requestedTemplateParameters,
+          calibrationProfile: calibrationProfile || undefined,
+          calibrationPatch: calibrationPatch || undefined,
           willRefreshParameterBindings: Boolean(needsParameterBindings),
           manifest: importedEntry ? {
             runnable: importedEntry.manifest?.runnable !== false && !importedEntry.conversionIncomplete,
@@ -14326,6 +14439,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           inputAssetId: sourceAsset.id,
           inputAssetName: sourceAsset.name || '',
           inputFromTimelineFrame: false,
+          frameTime: sourceFrameTimeSeconds,
           audioAssetId: null,
           audioAssetName: '',
           assetFieldIds: normalizedAssetFieldIds,
@@ -14338,6 +14452,25 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           fps: requestedFps,
           resolution: requestedResolution,
           templateParameters: requestedTemplateParameters,
+          calibrationProfile: calibrationProfile || undefined,
+          calibrationPatch: calibrationPatch || undefined,
+          calibrationReceipt: calibrationProfile ? {
+            ...(detail.calibrationReceipt || settings.calibrationReceipt || {}),
+            schema: 'velorn.calibration-receipt/v1',
+            status: 'prepared',
+            profileId: calibrationProfile.id,
+            profileVersion: calibrationProfile.version,
+            presetId: calibrationProfile.preset?.id || null,
+            templateName: template.name,
+            workflowSha256: calibrationPatch?.workflowSha256 || null,
+            controls: calibrationPatch?.controls || {},
+            sourceAssetId: sourceAsset.id,
+            sourceClipId: detail.sourceClip?.id || detail.source?.sourceClip?.id || null,
+            sourceFrameTimeSeconds,
+            assetFieldIds: normalizedAssetFieldIds,
+            estimatedCost: calibrationProfile.estimatedCost || null,
+            createdAt: new Date().toISOString(),
+          } : undefined,
           folderId: detail.folderId || detail.outputFolderId || null,
           status: 'queued',
           progress: 0,
@@ -15351,6 +15484,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     const jobFps = job?.fps
     const jobResolution = job?.resolution
     const jobSeed = job?.seed
+    const calibrationMetadata = buildCalibrationArtifactMetadata(job, {
+      promptId: job?.promptId || null,
+      workflowId: job?.workflowId || wfId,
+    })
     const sanitizeFolderSegment = (value, fallback = 'Workflow') => {
       const cleaned = String(value || fallback)
         .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
@@ -15435,6 +15572,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             url: assetUrl,
             prompt: jobPrompt,
             isImported: true,
+            workflowId: job?.workflowId || wfId,
+            workflowName: job?.workflowLabel || '',
+            promptId: job?.promptId || undefined,
+            calibration: calibrationMetadata || undefined,
             yolo: directorMeta || undefined,
             shortFilm: shortFilmMeta || undefined,
             folderId: assetFolderId,
@@ -15446,6 +15587,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               seed: jobSeed,
               inputAssetId: job?.inputAssetId || undefined,
               keyframeAssetId: job?.inputAssetId || shortFilmMeta?.keyframeAssetId || undefined,
+              calibration: calibrationMetadata || undefined,
             }
           }, assetFolderPath)
           if (newAsset) importedAssets.push(newAsset)
@@ -15467,6 +15609,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             type: 'video',
             url,
             prompt: jobPrompt,
+            workflowId: job?.workflowId || wfId,
+            workflowName: job?.workflowLabel || '',
+            promptId: job?.promptId || undefined,
+            calibration: calibrationMetadata || undefined,
             yolo: directorMeta || undefined,
             shortFilm: shortFilmMeta || undefined,
             folderId: getGeneratedFolderId('video', generatedFolderPath('video')),
@@ -15476,6 +15622,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               seed: jobSeed,
               inputAssetId: job?.inputAssetId || undefined,
               keyframeAssetId: job?.inputAssetId || shortFilmMeta?.keyframeAssetId || undefined,
+              calibration: calibrationMetadata || undefined,
             }
           })
           if (fallbackAsset) importedAssets.push(fallbackAsset)
@@ -16603,6 +16750,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               inputVideo: uploadedVideoFilename,
               assetFieldFilenames,
               templateParameters: job.templateParameters,
+              calibrationPatch: job.calibrationPatch,
               filenamePrefix: outputPrefix,
             })
             break
@@ -16636,7 +16784,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       // Save result to assets
       if (result) {
         updateJob(job.id, { status: 'saving', progress: 95 })
-        const saveResult = await saveGenerationResult(result, job.workflowId, job)
+        const saveResult = await saveGenerationResult(result, job.workflowId, { ...job, promptId })
         importedAssets = saveResult?.importedAssets || []
         if (!saveResult?.didImportAny) {
           throw new Error('Generation returned a stale/duplicate output; job was not imported. Queue paused for safety.')
@@ -16827,6 +16975,15 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         }
         return next
       })
+    },
+    onCalibrationControlChange: (profileId, controlId, value) => {
+      setCalibrationControlValues((prev) => ({
+        ...(prev || {}),
+        [profileId]: {
+          ...(prev?.[profileId] || {}),
+          [controlId]: value,
+        },
+      }))
     },
     onOpenCustomWorkflow: handleOpenCustomGenerateWorkflowInComfyUi,
     onImportCustomWorkflow: handleImportCustomGenerateWorkflow,
@@ -17034,6 +17191,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                       template={selectedComfyTemplate}
                       onBack={() => setSelectedComfyTemplate(null)}
                       isConnected={isConnected}
+                      importState={templateImportState}
+                      onImportToGenerate={handleImportOfficialTemplate}
                     />
                   ) : (
                     <WorkflowBrowser
@@ -17042,13 +17201,16 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                       route={workflowRoute}
                       onRouteChange={handleWorkflowRouteChange}
                       onSelectWorkflow={handleWorkflowManifestSelect}
-                      onSelectTemplate={setSelectedComfyTemplate}
+                      onSelectTemplate={(template) => {
+                        setTemplateImportState({ busy: false, message: '', error: '' })
+                        setSelectedComfyTemplate(template)
+                      }}
                       selectedTemplateName={selectedComfyTemplate?.name || ''}
                     />
                   )
                 ) : (
                   <WorkflowDetail
-                    workflow={selectedWorkflowManifest}
+                    workflow={selectedOperationalWorkflow}
                     values={workflowDetailValues}
                     actions={workflowDetailActions}
                     setup={workflowSetupFlow}
