@@ -3,6 +3,7 @@ const fs = fsSync.promises
 const http = require('http')
 const path = require('path')
 const { spawnSync } = require('child_process')
+const { comfyTemplateOverrides: MCP_COMFY_TEMPLATE_OVERRIDES } = require('./workflowPortfolioData.cjs')
 
 const DEFAULT_MCP_PORT = 19790
 const MCP_PROTOCOL_VERSION = '2024-11-05'
@@ -4169,7 +4170,43 @@ function splitWorkflowList(value) {
 }
 
 const MCP_TEMPLATE_SKIPPED_CATEGORY_TITLES = new Set(['Getting Started', 'Node Basics'])
+const MCP_TEMPLATE_PORTFOLIO_RANK = Object.freeze({
+  CHAMPION: 0,
+  SPECIALIST_CHAMPION: 0,
+  SOVEREIGN_ALTERNATIVE: 1,
+  ECONOMIC_ALTERNATIVE: 1,
+  PREMIUM_ALTERNATIVE: 1,
+  FRONTIER_CANDIDATE: 2,
+  FRONTIER_BLOCKED: 3,
+  UNASSESSED: 4,
+})
 let mcpTemplateCatalogCache = null
+
+function getMcpTemplateOperationalMetadata(template) {
+  const override = MCP_COMFY_TEMPLATE_OVERRIDES[String(template?.name || '').trim()] || {}
+  return {
+    capabilityLane: override.capabilityLane || template?.categoryLabel || 'ComfyUI template',
+    portfolioRole: override.portfolioRole || 'UNASSESSED',
+    evidenceLevel: override.evidenceLevel || 'DISCOVERABLE',
+    modelEvidenceLevel: override.modelEvidenceLevel || override.evidenceLevel || 'DISCOVERABLE',
+    routeEvidenceLevel: override.routeEvidenceLevel || 'DISCOVERABLE',
+    sovereignty: template?.openSource ? 'Open source workflow' : 'Commercial API',
+    evidenceLabel: override.evidenceLabel || 'Official ComfyUI template is discoverable; no exact product receipt is attached.',
+    qualityObservation: override.qualityObservation || '',
+    limitation: override.limitation || 'Import, dependency readiness and an exact-route artifact are still required.',
+    benchmark: override.benchmark || null,
+  }
+}
+
+function enrichMcpTemplateCatalogWithPortfolio(catalog) {
+  return {
+    ...catalog,
+    templates: catalog.templates.map((template) => ({
+      ...template,
+      operational: getMcpTemplateOperationalMetadata(template),
+    })),
+  }
+}
 
 function normalizeMcpTemplateSearchText(value) {
   return String(value || '')
@@ -4259,7 +4296,7 @@ async function fetchMcpComfyTemplateCatalog({ forceRefresh = false } = {}) {
     const response = await fetch(MCP_TEMPLATE_INDEX_URL, { signal: controller.signal, cache: 'no-store' })
     if (!response.ok) throw new Error(`Template index request failed (${response.status})`)
     const raw = await response.json()
-    const normalized = normalizeMcpTemplateIndex(raw)
+    const normalized = enrichMcpTemplateCatalogWithPortfolio(normalizeMcpTemplateIndex(raw))
     mcpTemplateCatalogCache = { fetchedAt: now, normalized }
     return { ...normalized, fetchedAt: now, fromCache: false }
   } finally {
@@ -4359,7 +4396,16 @@ function scoreMcpTemplateMatch(template, query) {
   const normalizedCategory = normalizeMcpTemplateSearchText(template?.categoryLabel)
   const normalizedTags = normalizeMcpTemplateSearchText((template?.tags || []).join(' '))
   const normalizedModels = normalizeMcpTemplateSearchText((template?.models || []).join(' '))
-  const haystack = [normalizedName, normalizedTitle, normalizedCategory, normalizedTags, normalizedModels]
+  const normalizedOperational = normalizeMcpTemplateSearchText([
+    template?.operational?.capabilityLane,
+    template?.operational?.portfolioRole,
+    template?.operational?.evidenceLevel,
+    template?.operational?.sovereignty,
+    template?.operational?.evidenceLabel,
+    template?.operational?.qualityObservation,
+    template?.operational?.limitation,
+  ].filter(Boolean).join(' '))
+  const haystack = [normalizedName, normalizedTitle, normalizedCategory, normalizedTags, normalizedModels, normalizedOperational]
     .filter(Boolean)
     .join(' ')
   const compactName = compactMcpTemplateSearchText(template?.name)
@@ -4386,11 +4432,17 @@ function filterMcpTemplates(templates = [], args = {}) {
   const category = normalizeMcpTemplateSearchText(args.category || args.categoryLabel || '')
   const model = normalizeMcpTemplateSearchText(args.model || '')
   const tag = normalizeMcpTemplateSearchText(args.tag || '')
+  const portfolioRole = normalizeMcpTemplateSearchText(args.portfolioRole || '')
+  const evidenceLevel = normalizeMcpTemplateSearchText(args.evidenceLevel || '')
+  const capabilityLane = normalizeMcpTemplateSearchText(args.capabilityLane || '')
 
   let results = templates.filter((template) => {
     if (category && normalizeMcpTemplateSearchText(template.categoryLabel) !== category && normalizeMcpTemplateSearchText(template.categoryId) !== category) return false
     if (model && !(template.models || []).some((entry) => normalizeMcpTemplateSearchText(entry).includes(model))) return false
     if (tag && !(template.tags || []).some((entry) => normalizeMcpTemplateSearchText(entry).includes(tag))) return false
+    if (portfolioRole && normalizeMcpTemplateSearchText(template.operational?.portfolioRole) !== portfolioRole) return false
+    if (evidenceLevel && normalizeMcpTemplateSearchText(template.operational?.evidenceLevel) !== evidenceLevel) return false
+    if (capabilityLane && !normalizeMcpTemplateSearchText(template.operational?.capabilityLane).includes(capabilityLane)) return false
     return true
   })
 
@@ -4402,6 +4454,13 @@ function filterMcpTemplates(templates = [], args = {}) {
       .map((entry) => ({ ...entry.template, matchScore: entry.score }))
   } else {
     results = results.slice().sort((a, b) => {
+      const aRole = a.operational?.portfolioRole || 'UNASSESSED'
+      const bRole = b.operational?.portfolioRole || 'UNASSESSED'
+      const roleCompare = (MCP_TEMPLATE_PORTFOLIO_RANK[aRole] ?? MCP_TEMPLATE_PORTFOLIO_RANK.UNASSESSED)
+        - (MCP_TEMPLATE_PORTFOLIO_RANK[bRole] ?? MCP_TEMPLATE_PORTFOLIO_RANK.UNASSESSED)
+      if (roleCompare !== 0) return roleCompare
+      const benchmarkCompare = (Number(b.operational?.benchmark?.score) || 0) - (Number(a.operational?.benchmark?.score) || 0)
+      if (benchmarkCompare !== 0) return benchmarkCompare
       const dateCompare = String(b.date || '').localeCompare(String(a.date || ''))
       return dateCompare || (b.usage || 0) - (a.usage || 0)
     })
@@ -7204,6 +7263,18 @@ function createToolDefinitions() {
           tag: {
             type: 'string',
             description: 'Optional tag filter, for example "Video Outpainting".',
+          },
+          portfolioRole: {
+            type: 'string',
+            description: 'Optional operational role filter, for example CHAMPION, SPECIALIST_CHAMPION, SOVEREIGN_ALTERNATIVE or FRONTIER_BLOCKED.',
+          },
+          evidenceLevel: {
+            type: 'string',
+            description: 'Optional evidence filter: DISCOVERABLE, INSTALLED, EXECUTABLE, TECHNICALLY_VALIDATED or PRODUCT_PROVEN.',
+          },
+          capabilityLane: {
+            type: 'string',
+            description: 'Optional operational lane filter, for example "Video · identity motion" or "Avatar · lipsync".',
           },
           limit: {
             type: 'integer',
@@ -12272,6 +12343,7 @@ class ComfyStudioMcpServer {
           io: template.io,
           workflowUrl: template.workflowUrl,
           sourceUrl: template.sourceUrl,
+          operational: template.operational || undefined,
           matchScore: template.matchScore || undefined,
         })),
       })

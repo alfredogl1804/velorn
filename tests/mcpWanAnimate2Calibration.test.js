@@ -99,6 +99,19 @@ function installTemplateCatalogMock(t) {
           ],
           outputs: [{ mediaType: 'video', nodeId: '486' }],
         },
+      }, {
+        name: 'api_seedance2_5_i2v_1080p',
+        title: 'Seedance 2.5 I2V 1080p',
+        description: 'Official identity-motion image-to-video template.',
+        models: ['Seedance 2.5'],
+        openSource: false,
+        size: 1024,
+        vram: 0,
+        tags: ['image to video', 'identity', 'motion'],
+        io: {
+          inputs: [{ mediaType: 'image', nodeId: '1' }],
+          outputs: [{ mediaType: 'video', nodeId: '2' }],
+        },
       }],
     }],
   })
@@ -109,6 +122,31 @@ function parseTextResult(result) {
   assert.equal(result?.isError, undefined, result?.content?.[0]?.text || 'Unexpected MCP error')
   return JSON.parse(result.content[0].text)
 }
+
+test('exposes benchmarked champions through the existing template catalog MCP tool', async (t) => {
+  installTemplateCatalogMock(t)
+  const server = createComfyStudioMcpServer()
+  server.updateSnapshot(createSnapshot())
+  const result = await server.callTool('list_comfyui_templates', {
+    portfolioRole: 'CHAMPION',
+    forceRefresh: true,
+  })
+  const body = parseTextResult(result)
+
+  assert.equal(body.returnedCount, 1)
+  assert.equal(body.templates[0].name, 'api_seedance2_5_i2v_1080p')
+  assert.equal(body.templates[0].operational.portfolioRole, 'CHAMPION')
+  assert.equal(body.templates[0].operational.modelEvidenceLevel, 'PRODUCT_PROVEN')
+  assert.equal(body.templates[0].operational.routeEvidenceLevel, 'DISCOVERABLE')
+  assert.equal(body.templates[0].operational.benchmark.score, 9.55)
+
+  const searchResult = await server.callTool('list_comfyui_templates', {
+    query: 'identity motion',
+    forceRefresh: true,
+  })
+  const searchBody = parseTextResult(searchResult)
+  assert.equal(searchBody.templates[0].name, 'api_seedance2_5_i2v_1080p')
+})
 
 test('previews the Wan Animate 2 champion with profile, patch, locks, cost and undo without dispatching', async (t) => {
   installTemplateCatalogMock(t)
