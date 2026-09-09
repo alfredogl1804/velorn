@@ -184,3 +184,18 @@ test('fails closed when the expected workflow class is absent', () => {
     /expected at least one WanAnimate2ToVideo node/
   )
 })
+
+test('fails closed instead of ignoring an unsupported occurrence selector', () => {
+  const workflow = makeWorkflow()
+  workflow['12:35'] = {
+    class_type: 'WanAnimate2ToVideo',
+    inputs: { video_frame_offset: 160, pose_start_percent: 0 },
+  }
+  const patch = makePatch()
+  patch.operations[0].target.occurrence = 'first'
+
+  assert.throws(
+    () => applyCalibrationPatch(workflow, patch),
+    /occurrence must be all for WanAnimate2ToVideo; received first/
+  )
+})

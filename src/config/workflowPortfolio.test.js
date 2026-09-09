@@ -174,6 +174,14 @@ test('keeps finishing and 3D routes honest about installed assets and exact prod
     categoryLabel: 'Video',
     openSource: false,
   })
+  const topazWorkflow = getWorkflowOperationalMetadata({
+    id: 'topaz-video-upscale',
+    workflowId: 'topaz-video-upscale',
+    route: 'cloud',
+    category: 'upscale',
+    provider: 'Topaz',
+    runnable: true,
+  })
   const meshy = getComfyTemplateOperationalMetadata({
     name: 'api_meshy7_image_to_model',
     categoryLabel: '3D',
@@ -194,6 +202,9 @@ test('keeps finishing and 3D routes honest about installed assets and exact prod
   assert.match(officialInterpolation.limitation, /RIFE requires a separate exact graph/i)
   assert.equal(topaz.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
   assert.match(topaz.limitation, /Astra 2 itself remains unbenchmarked/i)
+  assert.equal(topazWorkflow.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
+  assert.match(topazWorkflow.evidenceLabel, /Starlight and Astra are exposed/i)
+  assert.match(topazWorkflow.limitation, /Runway 4K upscaler was rejected/i)
   assert.equal(meshy.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
   assert.match(meshy.limitation, /No comparable 3D artifact/i)
   assert.equal(trellis.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED)

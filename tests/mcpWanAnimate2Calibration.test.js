@@ -462,3 +462,26 @@ test('dispatches the exact previewed CalibrationPatch only after previewOnly is 
   assert.equal(dispatchedRequest.payload.frameTime, 3.542)
   assert.deepEqual(dispatchedRequest.payload.assetFieldIds, { templateInput1: motionAsset.id })
 })
+
+test('fails closed when the renderer rejects calibrated template generation', async (t) => {
+  installTemplateCatalogMock(t)
+  const server = createComfyStudioMcpServer({
+    performAction: async () => ({
+      success: false,
+      error: 'Renderer rejected the calibrated workflow.',
+    }),
+  })
+  server.updateSnapshot(createSnapshot())
+
+  const result = await server.callTool('queue_timeline_template_generation', {
+    templateName: 'video_wan_animate2',
+    timeSeconds: 10,
+    prompt: 'Preserve identity and reproduce motion.',
+    calibrationProfileId: 'wan-animate2-identity-motion-v1',
+    forceRefreshTemplates: true,
+    previewOnly: false,
+  })
+
+  assert.equal(result.isError, true)
+  assert.match(result.content[0].text, /Renderer rejected the calibrated workflow/)
+})

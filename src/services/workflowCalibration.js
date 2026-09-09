@@ -129,9 +129,15 @@ export function applyCalibrationPatch(workflowJson, patch) {
   const applied = []
   for (const operation of operations) {
     const classType = String(operation?.target?.classType || '').trim()
+    const occurrence = String(operation?.target?.occurrence || '').trim()
     const allowedInputs = ALLOWED_INPUTS_BY_CLASS[classType]
     if (!allowedInputs || !contract.allowedClasses.has(classType)) {
       throw new Error(`CalibrationPatch cannot target class ${classType || '(missing)'}.`)
+    }
+    if (occurrence !== 'all') {
+      throw new Error(
+        `CalibrationPatch occurrence must be all for ${classType}; received ${occurrence || '(missing)'}.`
+      )
     }
 
     const inputs = operation?.inputs && typeof operation.inputs === 'object' ? operation.inputs : {}

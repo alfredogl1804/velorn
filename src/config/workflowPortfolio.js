@@ -173,13 +173,6 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     evidenceLabel: 'Seedance family artifact verified; exact 2.0 workflow still needs product proof',
     limitation: 'The preserved product artifact used another Seedance version/provider route.',
   }),
-  'topaz-video-upscale': Object.freeze({
-    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
-    availability: 'Cloud credentials required',
-    sovereignty: 'Commercial API',
-    evidenceLabel: 'Workflow is bundled; no exact product receipt was found',
-    limitation: 'A current credential and end-to-end artifact are still required.',
-  }),
 })
 
 const COMFY_TEMPLATE_PORTFOLIO_OVERRIDES = workflowPortfolioData.comfyTemplateOverrides

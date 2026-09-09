@@ -12276,6 +12276,13 @@ class ComfyStudioMcpServer {
       action: 'queue_timeline_template_generation',
       payload: buildRendererPayload(false),
     })
+    if (result?.success === false) {
+      return errorResult(
+        result.error
+          || result.message
+          || `Could not queue "${plan.template?.title || plan.template?.name || 'ComfyUI template'}" through Velorn.`
+      )
+    }
 
     return textResult({
       success: true,
