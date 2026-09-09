@@ -53,6 +53,9 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
   const portfolioRoleLabel = portfolioRole && portfolioRole !== 'UNASSESSED'
     ? portfolioRole.replaceAll('_', ' ')
     : ''
+  const calibrationProfiles = Array.isArray(template.calibrationProfiles)
+    ? template.calibrationProfiles
+    : []
 
   const handleOpenInComfy = async () => {
     if (openComfyState.busy) return
@@ -160,6 +163,30 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
                 {operational.limitation && (
                   <div className="mt-1 text-amber-200/90"><span className="font-semibold">Limitation:</span> {operational.limitation}</div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {calibrationProfiles.length > 0 && (
+            <div className="mt-4 rounded-xl border border-sf-accent/30 bg-sf-accent/5 p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-sf-accent">Workflow Equalizer available</div>
+              <div className="mt-2 space-y-2">
+                {calibrationProfiles.map((profile) => (
+                  <div key={profile.id} className="rounded-lg border border-sf-dark-700 bg-sf-dark-900/60 p-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-sf-text-primary">{profile.title}</span>
+                      <span className="rounded-full border border-emerald-400/30 px-2 py-0.5 text-[10px] text-emerald-300">
+                        {String(profile.routeEvidenceLevel || profile.evidenceLevel).replaceAll('_', ' ')}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-[10px] text-sf-text-muted">
+                      v{profile.version} · {profile.controlIds.join(' · ')}
+                    </div>
+                    <div className="mt-1 text-[10px] text-sf-text-secondary">
+                      Import the workflow to calibrate these controls in Generate; no duplicate graph is created.
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

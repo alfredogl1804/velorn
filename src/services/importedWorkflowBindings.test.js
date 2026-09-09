@@ -79,6 +79,9 @@ test('applies imported bindings and a Wan Animate 2 CalibrationPatch in one queu
     calibrationPatch: {
       schema: 'velorn.calibration-patch/v1',
       profileId: 'wan-animate2-identity-motion-v1',
+      profileVersion: 1,
+      templateName: 'video_wan_animate2',
+      workflowSha256: '772a7dfce6d5b61b8f838ec0609211a0c9b1c04a7c64e26d05f0852f147edac7',
       operations: [
         {
           target: { classType: 'WanAnimate2ToVideo', occurrence: 'all' },
@@ -86,7 +89,7 @@ test('applies imported bindings and a Wan Animate 2 CalibrationPatch in one queu
             width: 480,
             height: 848,
             length: 81,
-            video_frame_offset: 0,
+            video_frame_offset: 160,
             pose_strength: 1.1,
             pose_start_percent: 0,
             pose_end_percent: 1,

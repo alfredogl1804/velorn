@@ -36,6 +36,9 @@ function makePatch() {
   return {
     schema: 'velorn.calibration-patch/v1',
     profileId: 'wan-animate2-identity-motion-v1',
+    profileVersion: 1,
+    templateName: 'video_wan_animate2',
+    workflowSha256: '772a7dfce6d5b61b8f838ec0609211a0c9b1c04a7c64e26d05f0852f147edac7',
     operations: [
       {
         target: { classType: 'WanAnimate2ToVideo', occurrence: 'all' },
@@ -43,7 +46,7 @@ function makePatch() {
           width: 480,
           height: 848,
           length: 81,
-          video_frame_offset: 0,
+          video_frame_offset: 160,
           pose_strength: 1.2,
           pose_start_percent: 0,
           pose_end_percent: 0.9,
@@ -68,7 +71,7 @@ test('applies a Wan Animate 2 CalibrationPatch without mutating the source workf
     width: 480,
     height: 848,
     length: 81,
-    video_frame_offset: 0,
+    video_frame_offset: 160,
     pose_strength: 1.2,
     pose_start_percent: 0,
     pose_end_percent: 0.9,
@@ -103,6 +106,34 @@ test('rejects attempts to use CalibrationPatch as an arbitrary workflow editor',
     () => applyCalibrationPatch(makeWorkflow(), patch),
     /cannot modify WanAnimate2ToVideo\.model/
   )
+})
+
+test('rejects a CalibrationPatch that overrides a locked technical parameter', () => {
+  const patch = makePatch()
+  patch.operations[0].inputs.video_frame_offset = 0
+
+  assert.throws(
+    () => applyCalibrationPatch(makeWorkflow(), patch),
+    /cannot override locked WanAnimate2ToVideo\.video_frame_offset=160/
+  )
+})
+
+test('rejects unknown, stale or route-mismatched CalibrationProfiles', () => {
+  const unknown = makePatch()
+  unknown.profileId = 'unregistered-profile'
+  assert.throws(() => applyCalibrationPatch(makeWorkflow(), unknown), /profileId is not registered/)
+
+  const stale = makePatch()
+  stale.profileVersion = 2
+  assert.throws(() => applyCalibrationPatch(makeWorkflow(), stale), /profileVersion must be 1/)
+
+  const wrongTemplate = makePatch()
+  wrongTemplate.templateName = 'video_wan_animate2_distilled'
+  assert.throws(() => applyCalibrationPatch(makeWorkflow(), wrongTemplate), /templateName must be video_wan_animate2/)
+
+  const wrongHash = makePatch()
+  wrongHash.workflowSha256 = '0'.repeat(64)
+  assert.throws(() => applyCalibrationPatch(makeWorkflow(), wrongHash), /workflowSha256 does not match/)
 })
 
 test('builds materialized artifact provenance without mutating queue-time calibration data', () => {

@@ -1,4 +1,5 @@
 import { getComfyTemplateOperationalMetadata } from '../config/workflowPortfolio.js'
+import workflowCalibrationProfiles from '../../electron/workflowCalibrationProfiles.cjs'
 
 const TEMPLATE_REPO = 'Comfy-Org/workflow_templates'
 const TEMPLATE_INDEX_URL = `https://raw.githubusercontent.com/${TEMPLATE_REPO}/main/templates/index.json`
@@ -74,6 +75,7 @@ function normalizeTemplate(rawTemplate, categoryId, categoryLabel) {
   return {
     ...normalized,
     operational: getComfyTemplateOperationalMetadata(normalized),
+    calibrationProfiles: workflowCalibrationProfiles.summarizeCalibrationProfilesForTemplate(normalized.name),
   }
 }
 

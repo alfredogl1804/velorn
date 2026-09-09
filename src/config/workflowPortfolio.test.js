@@ -181,6 +181,17 @@ test('enriches official Comfy templates without changing their import identity',
   assert.match(template.workflowUrl, /api_seedance2_5_i2v_1080p\.json$/)
   assert.equal(template.operational.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.CHAMPION)
   assert.equal(template.operational.routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.deepEqual(template.calibrationProfiles, [])
+
+  const wanIndex = normalizeComfyTemplateIndex([{ title: 'Video', templates: [{
+    name: 'video_wan_animate2',
+    title: 'Wan Animate 2',
+    models: ['Wan Animate 2'],
+    openSource: true,
+  }] }])
+  assert.equal(wanIndex.templates[0].calibrationProfiles.length, 1)
+  assert.equal(wanIndex.templates[0].calibrationProfiles[0].id, 'wan-animate2-identity-motion-v1')
+  assert.equal(wanIndex.templates[0].calibrationProfiles[0].routeEvidenceLevel, WORKFLOW_EVIDENCE_LEVELS.PRODUCT_PROVEN)
 })
 
 test('derives operational metadata without duplicating workflow bindings', () => {

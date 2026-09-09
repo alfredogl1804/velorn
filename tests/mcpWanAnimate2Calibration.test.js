@@ -3,6 +3,10 @@ const assert = require('node:assert/strict')
 const http = require('node:http')
 
 const { createComfyStudioMcpServer } = require('../electron/mcpServer')
+const {
+  listCalibrationProfiles,
+  resolveCalibrationProfile,
+} = require('../electron/workflowCalibrationProfiles.cjs')
 
 const identityAsset = {
   id: 'asset-approved-identity',
@@ -146,6 +150,65 @@ test('exposes benchmarked champions through the existing template catalog MCP to
   })
   const searchBody = parseTextResult(searchResult)
   assert.equal(searchBody.templates[0].name, 'api_seedance2_5_i2v_1080p')
+
+  const equalizerResult = await server.callTool('list_comfyui_templates', {
+    query: 'Wan Animate 2',
+    forceRefresh: true,
+  })
+  const equalizerBody = parseTextResult(equalizerResult)
+  const wanAnimate = equalizerBody.templates.find((template) => template.name === 'video_wan_animate2')
+  assert.equal(wanAnimate.calibrationProfiles.length, 1)
+  assert.equal(wanAnimate.calibrationProfiles[0].id, 'wan-animate2-identity-motion-v1')
+  assert.equal(wanAnimate.calibrationProfiles[0].routeEvidenceLevel, 'PRODUCT_PROVEN')
+  assert.deepEqual(wanAnimate.calibrationProfiles[0].controlIds, [
+    'identityFidelity',
+    'motionAdherence',
+    'choreographyLock',
+  ])
+})
+
+test('keeps the Equalizer registry route-exact and exposes no invented profiles', () => {
+  const profiles = listCalibrationProfiles()
+  assert.equal(profiles.length, 1)
+  assert.equal(profiles[0].id, 'wan-animate2-identity-motion-v1')
+  assert.deepEqual(listCalibrationProfiles({ templateName: 'api_seedance2_5_i2v_1080p' }), [])
+  assert.deepEqual(listCalibrationProfiles({ templateName: 'video_wan2_2_14B_i2v' }), [])
+
+  assert.throws(
+    () => resolveCalibrationProfile('video_wan_animate2', { calibrationProfileId: 'made-up-profile' }),
+    /Unsupported CalibrationProfile/
+  )
+  assert.equal(resolveCalibrationProfile('api_seedance2_5_i2v_1080p', {}, {}), null)
+
+  const winner = resolveCalibrationProfile('video_wan_animate2', {
+    fps: 24,
+    durationSeconds: 3.375,
+    resolution: { width: 480, height: 848 },
+  }, { seed: 424242 })
+  assert.deepEqual(winner.calibrationPatch.controls, {
+    identityFidelity: 96,
+    motionAdherence: 75,
+    choreographyLock: 100,
+  })
+  assert.equal(winner.technicalParameters.referenceImageStrength, 1.35)
+  assert.equal(winner.technicalParameters.poseStrength, 1.25)
+  assert.equal(winner.technicalParameters.length, 81)
+
+  const clamped = resolveCalibrationProfile('video_wan_animate2', {
+    calibrationControls: {
+      identityFidelity: 500,
+      motionAdherence: -10,
+      choreographyLock: 25,
+    },
+  })
+  assert.deepEqual(clamped.calibrationPatch.controls, {
+    identityFidelity: 100,
+    motionAdherence: 0,
+    choreographyLock: 25,
+  })
+  assert.equal(clamped.technicalParameters.referenceImageStrength, 1.363)
+  assert.equal(clamped.technicalParameters.poseStrength, 0.5)
+  assert.equal(clamped.technicalParameters.poseEndPercent, 0.9)
 })
 
 test('previews the Wan Animate 2 champion with profile, patch, locks, cost and undo without dispatching', async (t) => {

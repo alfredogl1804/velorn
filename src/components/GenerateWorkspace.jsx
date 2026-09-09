@@ -29,6 +29,7 @@ import {
 } from '../config/importedWorkflowRegistry'
 import { applyImportedWorkflowBindings } from '../services/importedWorkflowBindings'
 import { buildCalibrationArtifactMetadata } from '../services/workflowCalibration'
+import workflowCalibrationProfiles from '../../electron/workflowCalibrationProfiles.cjs'
 import { fetchComfyTemplateCatalog } from '../services/comfyTemplateCatalog'
 import { importComfyTemplate, reimportImportedWorkflow } from '../services/templateImporter'
 import { COMFY_PARTNER_KEY_CHANGED_EVENT } from '../services/comfyPartnerAuth'
@@ -3498,6 +3499,11 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       ? persistedState.templateParameterValues
       : {}
   )
+  const [calibrationControlValues, setCalibrationControlValues] = useState(
+    persistedState?.calibrationControlValues && typeof persistedState.calibrationControlValues === 'object'
+      ? persistedState.calibrationControlValues
+      : {}
+  )
   const [activeAssetSlotId, setActiveAssetSlotId] = useState(persistedState?.activeAssetSlotId || 'asset')
   const [frameTime, setFrameTime] = useState(persistedState?.frameTime || 0)
 
@@ -3996,6 +4002,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         selectedAudioAssetId,
         selectedAssetFieldIds,
         templateParameterValues,
+        calibrationControlValues,
         activeAssetSlotId,
         frameTime,
         prompt,
@@ -4089,6 +4096,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     selectedAudioAssetId,
     selectedAssetFieldIds,
     templateParameterValues,
+    calibrationControlValues,
     activeAssetSlotId,
     frameTime,
     prompt,
@@ -4416,10 +4424,40 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       || visibleWorkflowManifests[0]
       || null
   ), [selectedWorkflowManifestId, visibleWorkflowManifests, workflowId])
-  const selectedOperationalWorkflow = useMemo(
-    () => mergeWorkflowRuntimeReadiness(selectedWorkflowManifest, dependencyCheck),
-    [dependencyCheck, selectedWorkflowManifest]
-  )
+  const selectedCalibrationProfile = useMemo(() => {
+    const templateName = String(selectedWorkflowManifest?.templateName || '').trim()
+    if (!templateName) return null
+    const summaries = workflowCalibrationProfiles.summarizeCalibrationProfilesForTemplate(templateName)
+    if (summaries.length === 0) return null
+    const profileId = summaries[0].id
+    return workflowCalibrationProfiles.resolveCalibrationProfile(templateName, {
+      calibrationProfileId: profileId,
+      calibrationControls: calibrationControlValues[profileId] || {},
+      durationSeconds: duration,
+      fps,
+      resolution,
+      assetFieldIds: selectedAssetFieldIds,
+    }, {
+      seed,
+      sourceClipId: null,
+      sourceFrameTimeSeconds: frameTime,
+    })
+  }, [
+    calibrationControlValues,
+    duration,
+    fps,
+    frameTime,
+    resolution,
+    seed,
+    selectedAssetFieldIds,
+    selectedWorkflowManifest?.templateName,
+  ])
+  const selectedOperationalWorkflow = useMemo(() => {
+    const workflow = mergeWorkflowRuntimeReadiness(selectedWorkflowManifest, dependencyCheck)
+    return workflow && selectedCalibrationProfile
+      ? { ...workflow, equalizer: selectedCalibrationProfile }
+      : workflow
+  }, [dependencyCheck, selectedCalibrationProfile, selectedWorkflowManifest])
 
   useEffect(() => {
     const parameterFields = (selectedWorkflowManifest?.fields || [])
@@ -8046,6 +8084,23 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       audioAssetName: selectedWorkflowManifest?.requiresAudio ? (selectedAudioAsset?.name || '') : '',
       assetFieldIds,
       templateParameters: { ...(templateParameterValues || {}) },
+      calibrationProfile: selectedCalibrationProfile || undefined,
+      calibrationPatch: selectedCalibrationProfile?.calibrationPatch || undefined,
+      calibrationReceipt: selectedCalibrationProfile ? {
+        schema: 'velorn.calibration-receipt/v1',
+        status: 'prepared',
+        profileId: selectedCalibrationProfile.id,
+        profileVersion: selectedCalibrationProfile.version,
+        presetId: selectedCalibrationProfile.preset?.id || null,
+        templateName: selectedCalibrationProfile.templateName,
+        workflowSha256: selectedCalibrationProfile.calibrationPatch?.workflowSha256 || null,
+        controls: selectedCalibrationProfile.calibrationPatch?.controls || {},
+        sourceAssetId: selectedAsset?.id || null,
+        sourceFrameTimeSeconds: frameTime || 0,
+        assetFieldIds: { ...assetFieldIds },
+        estimatedCost: selectedCalibrationProfile.estimatedCost || null,
+        createdAt: new Date().toISOString(),
+      } : undefined,
       inputFromTimelineFrame: false,
       referenceAssetId1: workflowId === 'image-edit' ? referenceAssetId1 : null,
       referenceAssetId2: workflowId === 'image-edit' ? referenceAssetId2 : null,
@@ -8119,6 +8174,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     selectedAsset?.id,
     selectedAsset?.name,
     selectedAssetFieldIds,
+    selectedCalibrationProfile,
     selectedAssetFields,
     selectedAudioAsset?.id,
     selectedAudioAsset?.name,
@@ -16881,6 +16937,15 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         }
         return next
       })
+    },
+    onCalibrationControlChange: (profileId, controlId, value) => {
+      setCalibrationControlValues((prev) => ({
+        ...(prev || {}),
+        [profileId]: {
+          ...(prev?.[profileId] || {}),
+          [controlId]: value,
+        },
+      }))
     },
     onOpenCustomWorkflow: handleOpenCustomGenerateWorkflowInComfyUi,
     onImportCustomWorkflow: handleImportCustomGenerateWorkflow,
