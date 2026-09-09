@@ -8,6 +8,7 @@ const {
   resolveCalibrationProfile,
   summarizeCalibrationProfilesForTemplate,
 } = require('./workflowCalibrationProfiles.cjs')
+const { recommendWorkflowRoutes } = require('./workflowRouteRecommendation.cjs')
 
 const DEFAULT_MCP_PORT = 19790
 const MCP_PROTOCOL_VERSION = '2024-11-05'
@@ -7081,6 +7082,31 @@ function createToolDefinitions() {
             type: 'string',
             description: 'Optional operational lane filter, for example "Video · identity motion" or "Avatar · lipsync".',
           },
+          recommend: {
+            type: 'boolean',
+            description: 'When true, ranks matching templates with an explainable advisory score. It never authorizes spend or queues generation.',
+          },
+          intent: {
+            type: 'string',
+            description: 'Creative or production intent used by advisory routing, for example "video identity motion" or "audio voice".',
+          },
+          qualityPriority: { type: 'number', minimum: 0, maximum: 100 },
+          costPriority: { type: 'number', minimum: 0, maximum: 100 },
+          privacyPriority: { type: 'number', minimum: 0, maximum: 100 },
+          readinessPriority: { type: 'number', minimum: 0, maximum: 100 },
+          minimumRouteEvidence: {
+            type: 'string',
+            enum: ['DISCOVERABLE', 'INSTALLED', 'EXECUTABLE', 'TECHNICALLY_VALIDATED', 'PRODUCT_PROVEN'],
+            description: 'Minimum exact-route evidence required for eligibility. Model-family evidence never satisfies this field.',
+          },
+          requireSovereign: {
+            type: 'boolean',
+            description: 'When true, only self-hosted, open-source, or user-controlled routes are eligible.',
+          },
+          includeIneligible: {
+            type: 'boolean',
+            description: 'When true, include blocked or policy-ineligible routes with explicit exclusion reasons.',
+          },
           limit: {
             type: 'integer',
             description: 'Maximum templates to return. Defaults to 20, max 100.',
@@ -12123,7 +12149,12 @@ class ComfyStudioMcpServer {
     try {
       const catalog = await fetchMcpComfyTemplateCatalog({ forceRefresh: args.forceRefresh === true })
       const limit = clampLimit(args.limit, 20, 100)
-      const templates = filterMcpTemplates(catalog.templates, args).slice(0, limit)
+      const filteredTemplates = filterMcpTemplates(catalog.templates, args)
+      const routingRequested = args.recommend === true || Boolean(String(args.intent || '').trim())
+      const templates = (routingRequested
+        ? recommendWorkflowRoutes(filteredTemplates, args)
+        : filteredTemplates
+      ).slice(0, limit)
       return textResult({
         success: true,
         action: 'list_comfyui_templates',
@@ -12133,6 +12164,13 @@ class ComfyStudioMcpServer {
         fetchedAt: catalog.fetchedAt,
         fromCache: catalog.fromCache,
         categories: catalog.categories,
+        routing: routingRequested ? {
+          mode: 'advisory',
+          intent: args.intent || args.capabilityLane || '',
+          selectedTemplateName: templates.find((template) => template.routeRecommendation?.selected)?.name || null,
+          kernelAuthorizationRequiredForSpend: true,
+          mediaBytesThroughKernel: false,
+        } : undefined,
         templates: templates.map((template) => ({
           name: template.name,
           title: template.title,
@@ -12150,6 +12188,7 @@ class ComfyStudioMcpServer {
           sourceUrl: template.sourceUrl,
           operational: template.operational || undefined,
           calibrationProfiles: template.calibrationProfiles?.length > 0 ? template.calibrationProfiles : undefined,
+          routeRecommendation: template.routeRecommendation || undefined,
           matchScore: template.matchScore || undefined,
         })),
       })

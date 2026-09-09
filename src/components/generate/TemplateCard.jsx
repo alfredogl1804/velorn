@@ -22,6 +22,7 @@ export default function TemplateCard({ template, selected = false, onSelect }) {
     ? portfolioRole.replaceAll('_', ' ')
     : ''
   const evidenceLevel = String(template.operational?.evidenceLevel || '')
+  const recommendation = template.routeRecommendation || null
 
   return (
     <button
@@ -99,6 +100,24 @@ export default function TemplateCard({ template, selected = false, onSelect }) {
         <div className="line-clamp-2 text-[13px] font-semibold leading-snug text-sf-text-primary">
           {template.title}
         </div>
+        {recommendation && (
+          <div
+            className={`rounded-lg border px-2 py-1.5 text-[10px] ${
+              recommendation.eligible
+                ? 'border-sf-accent/35 bg-sf-accent/10 text-sf-text-secondary'
+                : 'border-red-400/25 bg-red-400/10 text-red-200/90'
+            }`}
+            title={(recommendation.explanation || []).join('\n')}
+          >
+            <div className="flex items-center justify-between gap-2 font-semibold">
+              <span>{recommendation.selected ? 'Recommended' : `Route #${recommendation.rank}`}</span>
+              <span className="font-mono">{recommendation.score.toFixed(2)}</span>
+            </div>
+            <div className="mt-0.5 truncate text-sf-text-muted">
+              route {recommendation.routeEvidenceLevel} · model {recommendation.modelEvidenceLevel}
+            </div>
+          </div>
+        )}
         {template.models.length > 0 && (
           <div className="truncate text-[11px] text-sf-text-secondary">{template.models.join(' · ')}</div>
         )}

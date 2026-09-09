@@ -56,6 +56,7 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
   const calibrationProfiles = Array.isArray(template.calibrationProfiles)
     ? template.calibrationProfiles
     : []
+  const routeRecommendation = template.routeRecommendation || null
 
   const handleOpenInComfy = async () => {
     if (openComfyState.busy) return
@@ -163,6 +164,37 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
                 {operational.limitation && (
                   <div className="mt-1 text-amber-200/90"><span className="font-semibold">Limitation:</span> {operational.limitation}</div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {routeRecommendation && (
+            <div className={`mt-4 rounded-xl border p-3 ${
+              routeRecommendation.eligible
+                ? 'border-sf-accent/30 bg-sf-accent/5'
+                : 'border-red-400/25 bg-red-400/10'
+            }`}>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-sf-accent">Explainable route</div>
+                  <div className="mt-1 text-sm font-semibold text-sf-text-primary">
+                    {routeRecommendation.selected ? 'Recommended route' : `Route rank #${routeRecommendation.rank}`}
+                  </div>
+                </div>
+                <span className="rounded-full border border-sf-dark-600 px-2 py-0.5 font-mono text-xs text-sf-text-primary">
+                  {routeRecommendation.score.toFixed(2)}
+                </span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {Object.entries(routeRecommendation.components || {}).map(([key, value]) => (
+                  <MetaTile key={key} label={key} value={`${Math.round(Number(value) * 100)}%`} />
+                ))}
+              </div>
+              <div className="mt-3 space-y-1 text-[11px] leading-relaxed text-sf-text-secondary">
+                {(routeRecommendation.explanation || []).map((line) => <div key={line}>• {line}</div>)}
+              </div>
+              <div className="mt-2 border-t border-sf-dark-700 pt-2 text-[10px] text-sf-text-muted">
+                Advisory only · Kernel authorizes spend/policy · execution receipt required · media bytes do not transit Kernel.
               </div>
             </div>
           )}

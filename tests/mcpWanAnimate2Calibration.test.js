@@ -167,6 +167,53 @@ test('exposes benchmarked champions through the existing template catalog MCP to
   ])
 })
 
+test('routes explainably by intent, quality, exact-route proof and sovereignty without authorizing execution', async (t) => {
+  installTemplateCatalogMock(t)
+  const server = createComfyStudioMcpServer()
+  server.updateSnapshot(createSnapshot())
+
+  const qualityFirst = parseTextResult(await server.callTool('list_comfyui_templates', {
+    recommend: true,
+    intent: 'video identity motion',
+    qualityPriority: 90,
+    readinessPriority: 10,
+    costPriority: 0,
+    privacyPriority: 0,
+    forceRefresh: true,
+  }))
+  assert.equal(qualityFirst.routing.mode, 'advisory')
+  assert.equal(qualityFirst.routing.selectedTemplateName, 'api_seedance2_5_i2v_1080p')
+  assert.equal(qualityFirst.templates[0].routeRecommendation.modelEvidenceLevel, 'PRODUCT_PROVEN')
+  assert.equal(qualityFirst.templates[0].routeRecommendation.routeEvidenceLevel, 'DISCOVERABLE')
+  assert.equal(qualityFirst.templates[0].routeRecommendation.governance.advisoryOnly, true)
+  assert.equal(qualityFirst.templates[0].routeRecommendation.governance.mediaBytesThroughKernel, false)
+
+  const proofFirst = parseTextResult(await server.callTool('list_comfyui_templates', {
+    recommend: true,
+    intent: 'video identity motion',
+    qualityPriority: 10,
+    readinessPriority: 90,
+    costPriority: 0,
+    privacyPriority: 0,
+    forceRefresh: true,
+  }))
+  assert.equal(proofFirst.routing.selectedTemplateName, 'video_wan_animate2')
+  assert.equal(proofFirst.templates[0].routeRecommendation.routeEvidenceLevel, 'PRODUCT_PROVEN')
+
+  const sovereignOnly = parseTextResult(await server.callTool('list_comfyui_templates', {
+    recommend: true,
+    intent: 'video identity motion',
+    requireSovereign: true,
+    includeIneligible: true,
+    forceRefresh: true,
+  }))
+  const seedance = sovereignOnly.templates.find((template) => template.name === 'api_seedance2_5_i2v_1080p')
+  const wan = sovereignOnly.templates.find((template) => template.name === 'video_wan_animate2')
+  assert.equal(wan.routeRecommendation.eligible, true)
+  assert.equal(seedance.routeRecommendation.eligible, false)
+  assert.match(seedance.routeRecommendation.explanation.join(' '), /requireSovereign=true/)
+})
+
 test('keeps the Equalizer registry route-exact and exposes no invented profiles', () => {
   const profiles = listCalibrationProfiles()
   assert.equal(profiles.length, 1)
