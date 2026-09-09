@@ -3480,6 +3480,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   })
   const [workflowDetailOpen, setWorkflowDetailOpen] = useState(false)
   const [selectedComfyTemplate, setSelectedComfyTemplate] = useState(null)
+  const [templateImportState, setTemplateImportState] = useState({ busy: false, message: '', error: '' })
   const [importedWorkflowsVersion, setImportedWorkflowsVersion] = useState(0)
   const [latestWorkflowPreview, setLatestWorkflowPreview] = useState(null)
 
@@ -4589,6 +4590,43 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     setCategory(nextCategory)
     setWorkflowId(manifest.workflowId)
   }, [])
+
+  const handleImportOfficialTemplate = useCallback(async (template) => {
+    if (!template || templateImportState.busy) return
+    if (!isConnected) {
+      setTemplateImportState({ busy: false, message: '', error: 'Start or connect ComfyUI before importing this workflow.' })
+      return
+    }
+
+    setTemplateImportState({ busy: true, message: 'Downloading the official workflow…', error: '' })
+    try {
+      const result = await importComfyTemplate(template, {
+        onProgress: (_step, message) => {
+          if (message) setTemplateImportState({ busy: true, message, error: '' })
+        },
+      })
+      const entry = result?.entry || null
+      const manifest = entry?.manifest || null
+      if (!manifest) throw new Error('The official workflow was imported but did not produce a Generate manifest.')
+
+      setImportedWorkflowsVersion((version) => version + 1)
+      setSelectedComfyTemplate(null)
+      handleWorkflowManifestSelect(manifest)
+      setTemplateImportState({
+        busy: false,
+        message: manifest.runnable === false || entry.conversionIncomplete
+          ? 'Imported into Generate. Use Set up to install its missing dependencies.'
+          : 'Imported into Generate as an editable workflow.',
+        error: '',
+      })
+    } catch (error) {
+      setTemplateImportState({
+        busy: false,
+        message: '',
+        error: error instanceof Error ? error.message : 'Could not import this official workflow.',
+      })
+    }
+  }, [handleWorkflowManifestSelect, isConnected, templateImportState.busy])
 
   const handleWorkflowRouteChange = useCallback((nextRoute) => {
     setWorkflowRoute(nextRoute)
@@ -17153,6 +17191,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                       template={selectedComfyTemplate}
                       onBack={() => setSelectedComfyTemplate(null)}
                       isConnected={isConnected}
+                      importState={templateImportState}
+                      onImportToGenerate={handleImportOfficialTemplate}
                     />
                   ) : (
                     <WorkflowBrowser
@@ -17161,7 +17201,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                       route={workflowRoute}
                       onRouteChange={handleWorkflowRouteChange}
                       onSelectWorkflow={handleWorkflowManifestSelect}
-                      onSelectTemplate={setSelectedComfyTemplate}
+                      onSelectTemplate={(template) => {
+                        setTemplateImportState({ busy: false, message: '', error: '' })
+                        setSelectedComfyTemplate(template)
+                      }}
                       selectedTemplateName={selectedComfyTemplate?.name || ''}
                     />
                   )

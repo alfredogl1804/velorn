@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ExternalLink, KeyRound, LayoutGrid, Loader2, Puzzle } from 'lucide-react'
+import { ArrowLeft, Download, ExternalLink, KeyRound, LayoutGrid, Loader2, Puzzle } from 'lucide-react'
 import { formatBytes } from '../../hooks/useWorkflowSetupFlow'
 import { formatUsageCount } from './TemplateCard'
 import { collectUiNodeTypes } from '../../services/templateImporter'
@@ -16,7 +16,13 @@ function MetaTile({ label, value }) {
   )
 }
 
-export default function TemplateDetail({ template, onBack = null, isConnected = false }) {
+export default function TemplateDetail({
+  template,
+  onBack = null,
+  isConnected = false,
+  importState = null,
+  onImportToGenerate = null,
+}) {
   const [openComfyState, setOpenComfyState] = useState({ busy: false, message: '', error: '' })
   const [nodeCheck, setNodeCheck] = useState({ status: 'idle', missing: [] })
 
@@ -278,9 +284,29 @@ export default function TemplateDetail({ template, onBack = null, isConnected = 
 
           <button
             type="button"
+            onClick={() => { void onImportToGenerate?.(template) }}
+            disabled={!isConnected || importState?.busy || typeof onImportToGenerate !== 'function'}
+            className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
+              isConnected && !importState?.busy && typeof onImportToGenerate === 'function'
+                ? 'bg-sf-accent text-white hover:bg-sf-accent-hover'
+                : 'cursor-not-allowed bg-sf-dark-700 text-sf-text-muted'
+            }`}
+          >
+            {importState?.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {importState?.busy ? (importState.message || 'Importing workflow…') : 'Import to Generate'}
+          </button>
+          <div className="mt-1.5 text-center text-[10px] text-sf-text-muted">
+            Uses Velorn’s native importer and dependency setup; the official graph remains editable and is not copied into a parallel workflow.
+          </div>
+          {importState?.error && (
+            <div className="mt-1.5 text-center text-[10px] text-sf-error">{importState.error}</div>
+          )}
+
+          <button
+            type="button"
             onClick={() => { void handleOpenInComfy() }}
             disabled={!isConnected || openComfyState.busy}
-            className={`mt-2 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
+            className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-sf-dark-500 px-4 py-3 text-sm font-semibold transition-colors ${
               isConnected && !openComfyState.busy
                 ? 'bg-sf-accent text-white hover:bg-sf-accent-hover'
                 : 'cursor-not-allowed bg-sf-dark-700 text-sf-text-muted'
