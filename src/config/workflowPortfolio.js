@@ -76,11 +76,20 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     limitation: 'Audio-conditioned output has not yet passed the full Velorn product gate.',
   }),
   'frame-interpolation': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE,
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
     evidenceLabel: 'RIFE and interpolation assets found in the certified inventory',
     limitation: 'The bundled graph must still be matched to a current product artifact.',
+  }),
+  'topaz-video-upscale': Object.freeze({
+    portfolioRole: WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE,
+    evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
+    availability: 'Cloud credentials required',
+    sovereignty: 'Commercial API',
+    evidenceLabel: 'Topaz Starlight and Astra are exposed by the bundled guided workflow.',
+    limitation: 'The tested Runway 4K upscaler was rejected for premium finishing; this exact Topaz route remains unbenchmarked.',
   }),
   'music-gen': Object.freeze({
     portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,

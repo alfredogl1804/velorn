@@ -121,6 +121,40 @@ test('keeps provider matte proof separate from official Bria template execution'
   assert.match(soundEffects.limitation, /No exact SFX artifact/i)
 })
 
+test('keeps finishing and 3D routes honest about installed assets and exact product proof', () => {
+  const interpolation = getWorkflowOperationalMetadata({
+    id: 'frame-interpolation',
+    workflowId: 'frame-interpolation',
+    route: 'local',
+    category: 'video',
+    provider: 'Local',
+    runnable: true,
+  })
+  const topaz = getComfyTemplateOperationalMetadata({
+    name: 'api_topaz_astra2',
+    categoryLabel: 'Video',
+    openSource: false,
+  })
+  const meshy = getComfyTemplateOperationalMetadata({
+    name: 'api_meshy7_image_to_model',
+    categoryLabel: '3D',
+    openSource: false,
+  })
+  const trellis = getComfyTemplateOperationalMetadata({
+    name: '3d_pixal3d_trellis2_image_to_model',
+    categoryLabel: '3D',
+    openSource: true,
+  })
+
+  assert.equal(interpolation.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE)
+  assert.equal(interpolation.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.INSTALLED)
+  assert.equal(topaz.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.PREMIUM_ALTERNATIVE)
+  assert.match(topaz.limitation, /Astra 2 itself remains unbenchmarked/i)
+  assert.equal(meshy.evidenceLevel, WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE)
+  assert.match(meshy.limitation, /No comparable 3D artifact/i)
+  assert.equal(trellis.portfolioRole, WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED)
+})
+
 test('leaves unknown official templates unassessed instead of assigning a winner by default', () => {
   const unknown = getComfyTemplateOperationalMetadata({
     name: 'future-template',
