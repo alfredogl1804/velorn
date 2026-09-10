@@ -1,9 +1,10 @@
 {
   "name": "velorn",
-  "version": "0.3.32",
+  "version": "0.3.33",
   "description": "AI-native video editing built around real creative timelines, generative workflows, and local agent control.",
   "main": "electron/main.js",
   "scripts": {
+    "test:shuttle-keyframe-zoom": "node --test ./src/utils/shuttlePlayback.test.mjs ./src/utils/keyframeViewport.test.mjs",
     "dev": "vite",
     "build": "vite build",
     "icons:generate": "icon-gen -i build/icon.png -o build --ico --ico-name icon --icns --icns-name icon",

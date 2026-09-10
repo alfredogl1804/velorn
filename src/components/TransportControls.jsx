@@ -5,6 +5,7 @@ import useTimelineStore from '../stores/timelineStore'
 import useProjectStore from '../stores/projectStore'
 import TimelineSwitcher from './TimelineSwitcher'
 import { isTextEditingElement } from '../utils/keyboardFocus'
+import { getShuttleKeyAction } from '../utils/shuttlePlayback'
 import { formatTimecode, getSafeTimelineFps, stepTimeByFrames } from '../utils/timelineFrames'
 
 const SPACE_MODIFIER_USED_EVENT = 'comfystudio-space-modifier-used'
@@ -193,31 +194,21 @@ function TransportControls() {
         return
       }
 
-      // JKL Controls
-      if (e.key === 'j' || e.key === 'J') {
+      // Only unmodified/Shift JKL belongs to transport (Ctrl+Shift+L unlinks).
+      const shuttleAction = getShuttleKeyAction(e, isKHeld)
+      if (shuttleAction && timelineMode && !playDisabled) {
         e.preventDefault()
-        if (isKHeld) {
-          // K+J = slow reverse
-          shuttleSlow('reverse')
-        } else {
+        if (shuttleAction.type === 'pause') {
+          setIsKHeld(true)
+          shuttlePause()
+        } else if (shuttleAction.type === 'hold-slow' || shuttleAction.type === 'step-slow') {
+          shuttleSlow(shuttleAction.direction, shuttleAction.type === 'step-slow')
+        } else if (shuttleAction.direction === 'reverse') {
           shuttleReverse()
-        }
-      }
-      
-      if (e.key === 'k' || e.key === 'K') {
-        e.preventDefault()
-        setIsKHeld(true)
-        shuttlePause()
-      }
-      
-      if (e.key === 'l' || e.key === 'L') {
-        e.preventDefault()
-        if (isKHeld) {
-          // K+L = slow forward
-          shuttleSlow('forward')
         } else {
           shuttleForward()
         }
+        return
       }
       
       // I/O Points
@@ -285,19 +276,22 @@ function TransportControls() {
         spaceUsedAsModifierRef.current = true
       }
     }
+    const handleBlur = () => setIsKHeld(false)
     
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     window.addEventListener('mousedown', handleMouseDown)
     window.addEventListener(SPACE_MODIFIER_USED_EVENT, handleSpaceModifierUsed)
+    window.addEventListener('blur', handleBlur)
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('mousedown', handleMouseDown)
       window.removeEventListener(SPACE_MODIFIER_USED_EVENT, handleSpaceModifierUsed)
+      window.removeEventListener('blur', handleBlur)
     }
-  }, [isKHeld, playDisabled, isPlaying, togglePlay, shuttleReverse, shuttlePause, shuttleForward, shuttleSlow, setInPoint, setOutPoint, clearInOutPoints, frameBack, frameForward])
+  }, [isKHeld, timelineMode, playDisabled, isPlaying, togglePlay, shuttleReverse, shuttlePause, shuttleForward, shuttleSlow, setInPoint, setOutPoint, clearInOutPoints, frameBack, frameForward])
 
   // Format playback rate display
   const getPlaybackRateDisplay = () => {
@@ -458,7 +452,7 @@ function TransportControls() {
             disabled={playDisabled}
             title={mediaPreparation?.critical
               ? 'Project media is still loading'
-              : `${isPlaying ? 'Pause' : 'Play'} • Space/Enter = Play/Pause • Right-click for playback mode`}
+              : `${isPlaying ? 'Pause' : 'Play'} • Space/Enter = Play/Pause • J/L = reverse/forward • Shift+J/L = 1/2, 1/4, 1/8 speed • K = pause • Right-click for playback mode`}
           >
             {isPlaying ? (
               <Pause className="w-4 h-4 text-white" />
