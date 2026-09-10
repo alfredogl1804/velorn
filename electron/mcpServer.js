@@ -7225,6 +7225,10 @@ function createToolDefinitions() {
             type: 'string',
             description: 'Optional Velorn CalibrationProfile id. The current champion is "wan-animate2-identity-motion-v1" for template video_wan_animate2.',
           },
+          calibrationIntent: {
+            type: 'string',
+            description: 'Optional registered natural-language calibration intent. Resolution is deterministic and fail-closed; unsupported or conflicting intent is rejected instead of guessed.',
+          },
           calibrationControls: {
             type: 'object',
             description: 'Optional semantic controls for the selected CalibrationProfile. Wan Animate 2 accepts identityFidelity, motionAdherence, and choreographyLock on a 0-100 scale.',
