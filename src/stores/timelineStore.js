@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { nextShuttleRate } from '../utils/shuttlePlayback'
 import { persist } from 'zustand/middleware'
 import { TRANSITION_DEFAULT_SETTINGS, FRAME_RATE } from '../constants/transitions'
 import { buildTextAnimationPresetKeyframes, TEXT_ANIMATION_KEYFRAME_PROPERTIES } from '../utils/textAnimationPresets'
@@ -5151,19 +5152,7 @@ export const useTimelineStore = create(
    * JKL Shuttle: J key - play reverse (multiple presses increase speed)
    */
   shuttleReverse: () => {
-    set((state) => {
-      const speeds = [-1, -2, -4, -8]
-      
-      if (!state.isPlaying || state.playbackRate > 0) {
-        // Not playing or playing forward - start reverse at 1x
-        return { isPlaying: true, playbackRate: -1, shuttleMode: true }
-      }
-      
-      // Already playing reverse - increase speed
-      const currentIndex = speeds.indexOf(state.playbackRate)
-      const nextIndex = Math.min(currentIndex + 1, speeds.length - 1)
-      return { playbackRate: speeds[nextIndex], shuttleMode: true }
-    })
+    set((state) => ({ isPlaying: true, playbackRate: nextShuttleRate(state, 'reverse'), shuttleMode: true }))
   },
 
   /**
@@ -5177,27 +5166,16 @@ export const useTimelineStore = create(
    * JKL Shuttle: L key - play forward (multiple presses increase speed)
    */
   shuttleForward: () => {
-    set((state) => {
-      const speeds = [1, 2, 4, 8]
-      
-      if (!state.isPlaying || state.playbackRate < 0) {
-        // Not playing or playing reverse - start forward at 1x
-        return { isPlaying: true, playbackRate: 1, shuttleMode: true }
-      }
-      
-      // Already playing forward - increase speed
-      const currentIndex = speeds.indexOf(state.playbackRate)
-      const nextIndex = Math.min(currentIndex + 1, speeds.length - 1)
-      return { playbackRate: speeds[nextIndex], shuttleMode: true }
-    })
+    set((state) => ({ isPlaying: true, playbackRate: nextShuttleRate(state, 'forward'), shuttleMode: true }))
   },
 
   /**
    * JKL Shuttle: K+J or K+L - slow shuttle (hold K and tap J or L)
    */
-  shuttleSlow: (direction) => {
+  shuttleSlow: (direction, step = false) => {
     set((state) => {
-      const rate = direction === 'reverse' ? -0.5 : 0.5
+      // K+J/L retains fixed half-speed; Shift+J/L steps down to 1/8x.
+      const rate = step ? nextShuttleRate(state, direction, true) : direction === 'reverse' ? -0.5 : 0.5
       return { isPlaying: true, playbackRate: rate, shuttleMode: true }
     })
   },
