@@ -3,6 +3,17 @@ const CALIBRATION_PATCH_SCHEMA = 'velorn.calibration-patch/v1'
 
 const WAN_ANIMATE2_PROFILE_ID = 'wan-animate2-identity-motion-v1'
 const WAN_ANIMATE2_TEMPLATE_NAMES = new Set(['video_wan_animate2'])
+const WAN_ANIMATE2_NATURAL_INTENT_VERSION = 'wan-animate2-natural-intent/v1'
+const WAN_ANIMATE2_NATURAL_INTENTS = new Map([
+  [
+    'conserva al maximo la identidad sigue el movimiento aprobado y bloquea la coreografia',
+    Object.freeze({ identityFidelity: 96, motionAdherence: 75, choreographyLock: 100 }),
+  ],
+  [
+    'preserve the approved identity follow the approved motion and lock the choreography',
+    Object.freeze({ identityFidelity: 96, motionAdherence: 75, choreographyLock: 100 }),
+  ],
+])
 
 function clampNumber(value, min, max, fallback) {
   const number = Number(value)
@@ -17,6 +28,36 @@ function roundTo(value, decimals = 3) {
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value))
+}
+
+function normalizeNaturalIntent(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function resolveCalibrationIntent(profileId, intent) {
+  const normalizedProfileId = String(profileId || '').trim()
+  const rawIntent = String(intent || '').trim()
+  if (!rawIntent) return null
+  if (normalizedProfileId !== WAN_ANIMATE2_PROFILE_ID) {
+    throw new Error(`Natural calibration intent is unsupported for ${normalizedProfileId || '(missing profile)'}.`)
+  }
+  const normalizedIntent = normalizeNaturalIntent(rawIntent)
+  const controls = WAN_ANIMATE2_NATURAL_INTENTS.get(normalizedIntent)
+  if (!controls) {
+    throw new Error('Unsupported natural calibration intent. Use a registered intent alias or explicit calibrationControls.')
+  }
+  return {
+    schema: WAN_ANIMATE2_NATURAL_INTENT_VERSION,
+    profileId: WAN_ANIMATE2_PROFILE_ID,
+    intent: rawIntent,
+    normalizedIntent,
+    controls: cloneJson(controls),
+  }
 }
 
 const PROFILE_DESCRIPTORS = Object.freeze([
@@ -92,9 +133,21 @@ function buildWanAnimate2Calibration(templateName, args = {}, plan = {}) {
     throw new Error(`Unsupported CalibrationProfile for ${templateName}: ${requestedProfileId}.`)
   }
 
-  const requestedControls = args.calibrationControls && typeof args.calibrationControls === 'object'
+  const explicitControls = args.calibrationControls && typeof args.calibrationControls === 'object'
     ? args.calibrationControls
     : {}
+  const resolvedIntent = resolveCalibrationIntent(WAN_ANIMATE2_PROFILE_ID, args.calibrationIntent)
+  if (resolvedIntent) {
+    for (const [controlId, naturalValue] of Object.entries(resolvedIntent.controls)) {
+      if (Object.hasOwn(explicitControls, controlId) && Number(explicitControls[controlId]) !== Number(naturalValue)) {
+        throw new Error(`Calibration intent conflicts with explicit calibrationControls.${controlId}.`)
+      }
+    }
+  }
+  const requestedControls = {
+    ...(resolvedIntent?.controls || {}),
+    ...explicitControls,
+  }
   const identityFidelity = clampNumber(requestedControls.identityFidelity, 0, 100, 96)
   const motionAdherence = clampNumber(requestedControls.motionAdherence, 0, 100, 75)
   const choreographyLock = clampNumber(requestedControls.choreographyLock, 0, 100, 100)
@@ -264,6 +317,15 @@ function buildWanAnimate2Calibration(templateName, args = {}, plan = {}) {
       { role: 'motion_reference', field: 'templateInput1', type: 'video' },
       { role: 'prompt', field: 'prompt', type: 'text' },
     ],
+    intentEquivalence: {
+      schema: WAN_ANIMATE2_NATURAL_INTENT_VERSION,
+      source: resolvedIntent ? 'natural-language' : (Object.keys(explicitControls).length > 0 ? 'manual-controls' : 'profile-default'),
+      intent: resolvedIntent?.intent || null,
+      normalizedIntent: resolvedIntent?.normalizedIntent || null,
+      canonicalControls: cloneJson(controls),
+      manualEquivalent: { calibrationControls: cloneJson(controls) },
+      deterministic: true,
+    },
     calibrationPatch: patch,
   }
 }
@@ -294,6 +356,8 @@ module.exports = {
   CALIBRATION_PROFILE_SCHEMA,
   CALIBRATION_PATCH_SCHEMA,
   WAN_ANIMATE2_PROFILE_ID,
+  WAN_ANIMATE2_NATURAL_INTENT_VERSION,
+  resolveCalibrationIntent,
   getCalibrationProfileDescriptor,
   listCalibrationProfiles,
   summarizeCalibrationProfilesForTemplate,
