@@ -13000,7 +13000,9 @@ class ComfyStudioMcpServer {
       action: 'add_timeline_markers',
       payload: { markers },
     })
-
+    if (result?.success === false) {
+      return errorResult(result.error || result.message || 'Velorn could not add timeline markers.')
+    }
     return textResult({
       success: true,
       action: 'add_timeline_markers',
@@ -13055,7 +13057,9 @@ class ComfyStudioMcpServer {
         markerIds: markers.map((marker) => marker.id),
       },
     })
-
+    if (result?.success === false) {
+      return errorResult(result.error || result.message || 'Velorn could not remove timeline markers.')
+    }
     return textResult({
       success: true,
       action: 'remove_timeline_markers',
@@ -13114,7 +13118,9 @@ class ComfyStudioMcpServer {
         })),
       },
     })
-
+    if (result?.success === false) {
+      return errorResult(result.error || result.message || 'Velorn could not update timeline markers.')
+    }
     return textResult({
       success: true,
       action: 'set_timeline_marker_properties',
