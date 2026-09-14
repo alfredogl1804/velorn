@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  isGenerationRecoveryPending,
   normalizeGenerationRecoveryPolicy,
   planGenerationRetry,
   requeueGenerationJob,
@@ -59,6 +60,20 @@ test('requeues the same job and work identity while clearing attempt-local evide
   assert.equal(retried.promptId, undefined)
   assert.equal(retried.resultAssetIds, undefined)
   assert.equal(retried.recoveryLastError, 'temporary ComfyUI failure')
+})
+
+test('keeps only failed work with a live recovery policy durable across restarts', () => {
+  assert.equal(isGenerationRecoveryPending(failedJob(), NOW), true)
+  assert.equal(isGenerationRecoveryPending(failedJob({ status: 'done' }), NOW), false)
+  assert.equal(isGenerationRecoveryPending(failedJob({ status: 'cancelled' }), NOW), false)
+  assert.equal(isGenerationRecoveryPending(failedJob({ recoveryPolicy: null }), NOW), false)
+  assert.equal(
+    isGenerationRecoveryPending(
+      failedJob({ recoveryPolicy: { ...failedJob().recoveryPolicy, deadlineAt: '2026-09-14T09:59:59.000Z' } }),
+      NOW
+    ),
+    false
+  )
 })
 
 test('does not retry successful, canceled, malformed, or expired work', () => {

@@ -43,7 +43,11 @@ import { BUILTIN_WORKFLOW_PATHS } from '../config/workflowRegistry'
 import { comfyui, validateCustomKeyframeWorkflow, validateCustomVideoWorkflow } from '../services/comfyui'
 import { convertCustomLibraryWorkflowToApi } from '../services/customWorkflowLibrary'
 import { markPromptHandledByApp } from '../services/comfyPromptGuard'
-import { planGenerationRetry, requeueGenerationJob } from '../services/generationRecovery'
+import {
+  isGenerationRecoveryPending,
+  planGenerationRetry,
+  requeueGenerationJob,
+} from '../services/generationRecovery'
 import {
   GENERATION_COMPLETION_SOUND_CHANGED_EVENT,
   getGenerationCompletionSoundSettings,
@@ -721,34 +725,37 @@ function sanitizeGenerationJobForStorage(job) {
 }
 
 function normalizePersistedGenerationJob(job) {
-  if (!job?.id || !RECOVERABLE_JOB_STATUSES.has(job.status)) return null
-  const originProject = sanitizeProjectOriginForStorage(job.originProject)
-  const hasPromptId = Boolean(job.promptId)
-  const status = job.status === 'paused'
+  if (!job?.id) return null
+  const retryPlan = job.status === 'error' ? planGenerationRetry(job) : null
+  if (!RECOVERABLE_JOB_STATUSES.has(job.status) && !retryPlan) return null
+  const recoverableJob = retryPlan ? requeueGenerationJob(job, retryPlan) : job
+  const originProject = sanitizeProjectOriginForStorage(recoverableJob.originProject)
+  const hasPromptId = Boolean(recoverableJob.promptId)
+  const status = recoverableJob.status === 'paused'
     ? 'paused'
     : 'queued'
-  const assetFields = job.sourceAssets?.assetFields && typeof job.sourceAssets.assetFields === 'object'
+  const assetFields = recoverableJob.sourceAssets?.assetFields && typeof recoverableJob.sourceAssets.assetFields === 'object'
     ? Object.fromEntries(
-      Object.entries(job.sourceAssets.assetFields)
+      Object.entries(recoverableJob.sourceAssets.assetFields)
         .map(([key, asset]) => [key, sanitizeAssetSnapshotForStorage(asset)])
         .filter(([, asset]) => Boolean(asset))
     )
     : null
 
   return {
-    ...job,
+    ...recoverableJob,
     originProject,
-    sourceAssets: job.sourceAssets && typeof job.sourceAssets === 'object'
+    sourceAssets: recoverableJob.sourceAssets && typeof recoverableJob.sourceAssets === 'object'
       ? {
-        input: sanitizeAssetSnapshotForStorage(job.sourceAssets.input),
-        reference1: sanitizeAssetSnapshotForStorage(job.sourceAssets.reference1),
-        reference2: sanitizeAssetSnapshotForStorage(job.sourceAssets.reference2),
-        audio: sanitizeAssetSnapshotForStorage(job.sourceAssets.audio),
+        input: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.input),
+        reference1: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.reference1),
+        reference2: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.reference2),
+        audio: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.audio),
         assetFields,
       }
       : null,
     status,
-    progress: hasPromptId ? Math.max(Number(job.progress) || 0, 45) : 0,
+    progress: hasPromptId ? Math.max(Number(recoverableJob.progress) || 0, 45) : 0,
     error: null,
     node: null,
     restoredFromLedger: true,
@@ -4245,7 +4252,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   useEffect(() => {
     try {
       const jobsToPersist = generationQueue
-        .filter((job) => RECOVERABLE_JOB_STATUSES.has(job.status))
+        .filter((job) => RECOVERABLE_JOB_STATUSES.has(job.status) || isGenerationRecoveryPending(job))
         .map(sanitizeGenerationJobForStorage)
         .filter(Boolean)
         .slice(-PERSISTED_GENERATION_QUEUE_LIMIT)
