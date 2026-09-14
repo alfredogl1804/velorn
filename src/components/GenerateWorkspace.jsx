@@ -43,6 +43,7 @@ import { BUILTIN_WORKFLOW_PATHS } from '../config/workflowRegistry'
 import { comfyui, validateCustomKeyframeWorkflow, validateCustomVideoWorkflow } from '../services/comfyui'
 import { convertCustomLibraryWorkflowToApi } from '../services/customWorkflowLibrary'
 import { markPromptHandledByApp } from '../services/comfyPromptGuard'
+import { planGenerationRetry, requeueGenerationJob } from '../services/generationRecovery'
 import {
   GENERATION_COMPLETION_SOUND_CHANGED_EVENT,
   getGenerationCompletionSoundSettings,
@@ -16822,10 +16823,23 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     if (processingRef.current) return
     if (queuePausedRef.current) return
     if (!isConnected) return
-    const nextJob = queueRef.current.find((job) => (
-      job.status === 'queued' && !startedJobIdsRef.current.has(job.id)
-    ))
-    if (!nextJob) return
+    const nowMs = Date.now()
+    const nextJob = queueRef.current.find((job) => {
+      if (job.status !== 'queued' || startedJobIdsRef.current.has(job.id)) return false
+      const nextAttemptAt = Date.parse(String(job.recoveryNextAttemptAt || ''))
+      return !Number.isFinite(nextAttemptAt) || nextAttemptAt <= nowMs
+    })
+    if (!nextJob) {
+      const nextWakeAt = queueRef.current
+        .filter((job) => job.status === 'queued' && !startedJobIdsRef.current.has(job.id))
+        .map((job) => Date.parse(String(job.recoveryNextAttemptAt || '')))
+        .filter((value) => Number.isFinite(value) && value > nowMs)
+        .sort((left, right) => left - right)[0]
+      if (Number.isFinite(nextWakeAt)) {
+        setTimeout(() => processQueue(), Math.max(100, nextWakeAt - nowMs))
+      }
+      return
+    }
 
     startedJobIdsRef.current.add(nextJob.id)
     processingRef.current = true
@@ -16849,6 +16863,21 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       })
     }
     const didFail = finishedJob?.status === 'error' || finishedJob?.status === 'queued'
+    const retryPlan = planGenerationRetry(finishedJob)
+    if (retryPlan) {
+      startedJobIdsRef.current.delete(nextJob.id)
+      setGenerationQueue((previous) => previous.map((job) => (
+        job.id === nextJob.id ? requeueGenerationJob(job, retryPlan) : job
+      )))
+      consecutiveRapidFailsRef.current = 0
+      addComfyLog(
+        'status',
+        `Recovery scheduled for ${finishedJob.workflowLabel || finishedJob.workflowId || finishedJob.id} `
+          + `(attempt ${retryPlan.retryCount}, ${Math.ceil(retryPlan.delayMs / 1000)}s backoff)`
+      )
+      setTimeout(() => processQueue(), retryPlan.delayMs)
+      return
+    }
 
     if (didFail && jobElapsed < RAPID_FAIL_THRESHOLD_MS) {
       consecutiveRapidFailsRef.current += 1
