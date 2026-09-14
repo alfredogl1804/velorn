@@ -59,6 +59,10 @@ export function planGenerationRetry(job, nowMs = Date.now()) {
   }
 }
 
+export function isGenerationRecoveryPending(job, nowMs = Date.now()) {
+  return Boolean(planGenerationRetry(job, nowMs))
+}
+
 export function requeueGenerationJob(job, retryPlan) {
   if (!job?.id || !retryPlan) return job
   return {
@@ -83,5 +87,6 @@ export function requeueGenerationJob(job, retryPlan) {
 export default {
   normalizeGenerationRecoveryPolicy,
   planGenerationRetry,
+  isGenerationRecoveryPending,
   requeueGenerationJob,
 }
