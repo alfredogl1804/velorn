@@ -56,4 +56,26 @@ for (const testCase of [
     assert.equal(result.isError, true)
     assert.match(result.content[0].text, new RegExp(`renderer rejected ${testCase.action}`))
   })
+
+  test(`${testCase.tool} preserves a successful renderer response`, async () => {
+    const calls = []
+    const server = createComfyStudioMcpServer({
+      performAction: async (request) => {
+        calls.push(request)
+        return { success: true, receipt: `renderer accepted ${request.action}` }
+      },
+    })
+    server.updateSnapshot(snapshot())
+
+    const result = await server.callTool(testCase.tool, testCase.args)
+    const body = JSON.parse(result.content[0].text)
+
+    assert.equal(calls.length, 1)
+    assert.equal(calls[0].action, testCase.action)
+    assert.equal(result.isError, undefined)
+    assert.equal(body.success, true)
+    assert.equal(body.action, testCase.action)
+    assert.equal(body.result.success, true)
+    assert.equal(body.result.receipt, `renderer accepted ${testCase.action}`)
+  })
 }
