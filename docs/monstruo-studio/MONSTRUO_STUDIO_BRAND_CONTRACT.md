@@ -34,7 +34,7 @@ La fuente canónica usada es `SpaceGrotesk-Bold.ttf`, SHA-256 `acad6de1fc93436f5
 
 ## Contrato del monograma
 
-El monograma final debe contener dos glifos identificables: **M** y **S**. Ambos comparten familia, peso, color y altura óptica. No puede insertar símbolos de cine ni depender de una fuente instalada. La variante elegida se convierte en el único SVG maestro del cual se derivan PNG, ICNS e ICO.
+El monograma final debe contener dos glifos identificables: **M** y **S**. Ambos comparten familia, peso base, color y altura óptica. Se permite una compensación óptica mínima sobre la S cuando sea necesaria para igualar masa percibida; debe quedar declarada en el manifest y no puede deformar la M, el kerning o la silueta general. El monograma no puede insertar símbolos de cine ni depender de una fuente instalada. La variante elegida se convierte en el único SVG maestro del cual se derivan PNG, ICNS e ICO.
 
 El SVG maestro debe cumplir estas invariantes:
 

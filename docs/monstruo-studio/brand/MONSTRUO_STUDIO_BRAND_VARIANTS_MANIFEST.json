@@ -56,6 +56,24 @@
       "name": "Masa integrada",
       "rationale": "M y S se tocan en una sola masa visual; conserva identificación de ambas.",
       "svg": "monstruo-studio-ms-c.svg"
+    },
+    {
+      "id": "A2",
+      "name": "Claridad horizontal · corrección óptica",
+      "rationale": "Conserva la composición A y compensa únicamente el peso percibido de la S.",
+      "svg": "monstruo-studio-ms-a2-optical.svg",
+      "optical_correction": {
+        "target": "S",
+        "stroke_width_font_units": 8,
+        "estimated_added_weight_percent": 14,
+        "unchanged": [
+          "M",
+          "placement",
+          "scale",
+          "plate",
+          "color"
+        ]
+      }
     }
   ],
   "files": {
@@ -64,7 +82,10 @@
     "monstruo-studio-ms-c.svg": "7c207379d63f2ca6a68237132fdca4e2669fb7455f3a2810510551558d93a23f",
     "monstruo-studio-ms-comparison.svg": "7855af0dbf3c4334bcc1e41d4c662ffde215ce896e62bf5b6bd6e530aa5b2284",
     "monstruo-studio-ms-1024-preview.svg": "89257530ea22c78487573585bef6574b3b5b0e16889df31246d120fc5aacdf0f",
+    "monstruo-studio-ms-a2-optical.svg": "50e7e102410516b6558ad234c4c190a2bee19c370eae12c3eb236cd0f065869d",
+    "monstruo-studio-ms-a-optical-comparison.svg": "a9909d1b0c6e7cb5039c3e8ed14eed7571e87c6ce1db9a785fe12903843991dd",
     "monstruo-studio-ms-comparison.png": "9e2a79ae79209954a9841908812ffc2f2e4329e78e8b059f094da873fd2cacda",
-    "monstruo-studio-ms-1024-preview.png": "37b8fab41032fb0700d92b3cf025c87678383977724d211e0f2294edf19f4d15"
+    "monstruo-studio-ms-1024-preview.png": "37b8fab41032fb0700d92b3cf025c87678383977724d211e0f2294edf19f4d15",
+    "monstruo-studio-ms-a-optical-comparison.png": "f662083fbb71130a3d1928e58b8fea7840b00a4030ded0790b9035cbeafa3894"
   }
 }

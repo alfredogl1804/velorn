@@ -51,6 +51,7 @@ class Variant:
     s_x: float
     s_y: float
     s_scale: float
+    s_stroke_width: float = 0
 
 
 VARIANTS = (
@@ -89,6 +90,19 @@ VARIANTS = (
     ),
 )
 
+OPTICAL_A = Variant(
+    "A2",
+    "Claridad horizontal · corrección óptica",
+    "Conserva la composición A y compensa únicamente el peso percibido de la S.",
+    116,
+    718,
+    0.60,
+    560,
+    718,
+    0.60,
+    8,
+)
+
 
 def normalized_text(value: str) -> str:
     return "\n".join(line.rstrip() for line in value.splitlines()) + "\n"
@@ -115,11 +129,17 @@ def glyph_path(font: TTFont, character: str) -> tuple[str, tuple[float, float, f
 
 
 def mark_group(variant: Variant, prefix: str = "") -> str:
+    s_stroke = ""
+    if variant.s_stroke_width:
+        s_stroke = (
+            f' stroke="{CYAN}" stroke-width="{variant.s_stroke_width:g}"'
+            ' stroke-linejoin="round" stroke-linecap="round" paint-order="stroke fill"'
+        )
     return f"""
     <g id="{prefix}monogram-{variant.key.lower()}" aria-label="MS">
       <path d="{CANONICAL_M}" fill="{CYAN}"
             transform="translate({variant.m_x:g} {variant.m_y:g}) scale({variant.m_scale:g} {-variant.m_scale:g})"/>
-      <path d="{{S_PATH}}" fill="{CYAN}"
+      <path d="{{S_PATH}}" fill="{CYAN}"{s_stroke}
             transform="translate({variant.s_x:g} {variant.s_y:g}) scale({variant.s_scale:g} {-variant.s_scale:g})"/>
     </g>"""
 
@@ -235,6 +255,30 @@ def preview_1024_svg(s_path: str) -> str:
 """
 
 
+def optical_correction_svg(s_path: str) -> str:
+    original = icon_instance(VARIANTS[0], s_path, 70, 80, 920)
+    corrected = icon_instance(OPTICAL_A, s_path, 1170, 80, 920)
+    small_original = "".join(
+        icon_instance(VARIANTS[0], s_path, 270 + offset, 1080 + (64 - size) / 2, size)
+        for offset, size in zip((0, 100, 220), (16, 32, 64))
+    )
+    small_corrected = "".join(
+        icon_instance(OPTICAL_A, s_path, 1370 + offset, 1080 + (64 - size) / 2, size)
+        for offset, size in zip((0, 100, 220), (16, 32, 64))
+    )
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="2160" height="1240" viewBox="0 0 2160 1240">
+  <rect width="2160" height="1240" fill="#111417"/>
+  {original}
+  {corrected}
+  <text x="530" y="1045" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="34" fill="#F5F5F7">Original A</text>
+  <text x="1630" y="1045" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="34" fill="#F5F5F7">A2 · S con corrección óptica</text>
+  {small_original}
+  {small_corrected}
+  <text x="70" y="1194" font-family="Space Grotesk, sans-serif" font-size="24" fill="#8E969B">Único cambio: stroke óptico +8 unidades sobre la S; M, escala, kerning, placa y color permanecen iguales.</text>
+</svg>
+"""
+
+
 def main() -> None:
     if not FONT.exists():
         raise SystemExit(f"Missing canonical font: {FONT}")
@@ -260,9 +304,21 @@ def main() -> None:
     preview_1024_path.write_text(normalized_text(preview_1024_svg(s_path)), encoding="utf-8")
     generated.append(preview_1024_path)
 
+    optical_master_path = OUTPUT / "monstruo-studio-ms-a2-optical.svg"
+    optical_master_path.write_text(normalized_text(master_svg(OPTICAL_A, s_path)), encoding="utf-8")
+    generated.append(optical_master_path)
+
+    optical_comparison_path = OUTPUT / "monstruo-studio-ms-a-optical-comparison.svg"
+    optical_comparison_path.write_text(
+        normalized_text(optical_correction_svg(s_path)),
+        encoding="utf-8",
+    )
+    generated.append(optical_comparison_path)
+
     for png_name in (
         "monstruo-studio-ms-comparison.png",
         "monstruo-studio-ms-1024-preview.png",
+        "monstruo-studio-ms-a-optical-comparison.png",
     ):
         png_path = OUTPUT / png_name
         if png_path.exists():
@@ -294,6 +350,20 @@ def main() -> None:
                 "svg": f"monstruo-studio-ms-{variant.key.lower()}.svg",
             }
             for variant in VARIANTS
+        ]
+        + [
+            {
+                "id": OPTICAL_A.key,
+                "name": OPTICAL_A.name,
+                "rationale": OPTICAL_A.rationale,
+                "svg": "monstruo-studio-ms-a2-optical.svg",
+                "optical_correction": {
+                    "target": "S",
+                    "stroke_width_font_units": OPTICAL_A.s_stroke_width,
+                    "estimated_added_weight_percent": 14,
+                    "unchanged": ["M", "placement", "scale", "plate", "color"],
+                },
+            }
         ],
         "files": {path.name: sha256(path) for path in generated},
     }

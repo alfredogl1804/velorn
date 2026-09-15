@@ -1,6 +1,6 @@
 # Gate perceptual — monograma MS de Monstruo Studio
 
-**Acción requerida de Alfredo:** seleccionar **A**, **B** o **C**.
+**Estado actualizado:** Alfredo señaló **A** como la dirección correcta y detectó que la S se percibía más ligera que la M. Se produjo **A2**, una corrección óptica focalizada. Falta confirmar A2 antes de integrar la marca en la aplicación.
 
 ![Comparación de variantes MS](brand/monstruo-studio-ms-comparison.png)
 
@@ -18,12 +18,18 @@ Las tres usan la M canónica de El Monstruo y una S del mismo Space Grotesk Bold
 
 ![Prueba a 1024 px](brand/monstruo-studio-ms-1024-preview.png)
 
+## Corrección óptica de A
+
+![Original A frente a A2](brand/monstruo-studio-ms-a-optical-comparison.png)
+
+A2 conserva íntegramente la M, la escala, el kerning, la placa, la posición y el color de A. El único cambio es un stroke óptico de 8 unidades del espacio de la fuente aplicado a la S, equivalente aproximadamente a un 14% adicional sobre su trazo nominal. Esto compensa la pérdida perceptual propia de las curvas sin convertir la S en otra familia ni deformarla.
+
 ## Estado
 
 - SVG maestros: completos.
 - Pruebas visuales: 16, 32, 64, 256 y 1024 px.
 - Mockup dentro del shell: completo.
 - Aplicación funcional: **sin cambios**.
-- Gate: **esperando elección explícita de Alfredo**.
+- Gate: **esperando confirmación explícita de A2**.
 
 Después de elegir una variante se generarán todos los iconos, splash y recursos finales, y se aplicará la identidad completa a la app en una sola fase validada.
