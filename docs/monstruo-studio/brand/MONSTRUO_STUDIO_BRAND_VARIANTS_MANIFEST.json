@@ -1,0 +1,70 @@
+{
+  "schema": "monstruo-studio.brand-variants/v1",
+  "generated_at": "2026-09-15",
+  "font": {
+    "family": "Space Grotesk",
+    "weight": 700,
+    "license": "OFL-1.1",
+    "source": "https://github.com/floriankarsten/space-grotesk",
+    "path_used": "/Users/alfredogongora/el-monstruo/apps/mobile/assets/fonts/SpaceGrotesk-Bold.ttf",
+    "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
+    "units_per_em": 1000
+  },
+  "canonical_m_match": true,
+  "glyphs": {
+    "M": {
+      "bounds": [
+        86,
+        0,
+        772,
+        700
+      ],
+      "advance_width": 858,
+      "svg_path": "M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z"
+    },
+    "S": {
+      "bounds": [
+        54,
+        -14,
+        560,
+        714
+      ],
+      "advance_width": 616,
+      "svg_path": "M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z"
+    }
+  },
+  "colors": {
+    "background": "#000000",
+    "accent": "#00E5FF",
+    "plate_stroke": "#103139"
+  },
+  "variants": [
+    {
+      "id": "A",
+      "name": "Claridad horizontal",
+      "rationale": "Máxima legibilidad, aire óptico y lectura inmediata de ambas letras.",
+      "svg": "monstruo-studio-ms-a.svg"
+    },
+    {
+      "id": "B",
+      "name": "Compacta editorial",
+      "rationale": "Kerning cerrado y mayor presencia en Dock sin solapamiento decorativo.",
+      "svg": "monstruo-studio-ms-b.svg"
+    },
+    {
+      "id": "C",
+      "name": "Masa integrada",
+      "rationale": "M y S se tocan en una sola masa visual; conserva identificación de ambas.",
+      "svg": "monstruo-studio-ms-c.svg"
+    }
+  ],
+  "files": {
+    "monstruo-studio-ms-a.svg": "683657e6a629376eaca84557cfdbc46d236a7c90437862c6438e1cc4c9d65458",
+    "monstruo-studio-ms-b.svg": "db2eb1119cc1ef6caa8392746ae7ae5a03fdb5a2f826eb4399bc17728550265b",
+    "monstruo-studio-ms-c.svg": "7c207379d63f2ca6a68237132fdca4e2669fb7455f3a2810510551558d93a23f",
+    "monstruo-studio-ms-comparison.svg": "7855af0dbf3c4334bcc1e41d4c662ffde215ce896e62bf5b6bd6e530aa5b2284",
+    "monstruo-studio-ms-1024-preview.svg": "89257530ea22c78487573585bef6574b3b5b0e16889df31246d120fc5aacdf0f",
+    "monstruo-studio-ms-comparison.png": "9e2a79ae79209954a9841908812ffc2f2e4329e78e8b059f094da873fd2cacda",
+    "monstruo-studio-ms-1024-preview.png": "37b8fab41032fb0700d92b3cf025c87678383977724d211e0f2294edf19f4d15"
+  }
+}
