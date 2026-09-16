@@ -4042,7 +4042,7 @@ const runExportTimeline = async (options = {}, onProgress = () => {}) => {
   let encodeResult = null
   if (gifExport) {
     if (!window.electronAPI?.encodeGif || !window.electronAPI?.abortGifEncode) {
-      throw new Error('GIF export requires the Velorn desktop app. Restart Velorn and try again.')
+      throw new Error('GIF export requires the Monstruo Studio desktop app. Restart Monstruo Studio and try again.')
     }
     throwIfCancelled()
     const gifEncodeSessionId = globalThis.crypto?.randomUUID?.()
@@ -4215,7 +4215,7 @@ export const exportTimeline = async (options = {}, onProgress = () => {}) => {
 
   const api = typeof window !== 'undefined' ? window.electronAPI : null
   if (!api?.exists || !api?.createDirectory || !api?.deleteDirectory || !api?.pathJoin || !api?.writeFileFromArrayBuffer) {
-    throw new Error('PNG sequence export requires the Velorn desktop app.')
+    throw new Error('PNG sequence export requires the Monstruo Studio desktop app.')
   }
 
   return withOwnedPngSequenceOutput({

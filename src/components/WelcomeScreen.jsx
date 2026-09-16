@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useRef } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { FolderOpen, Plus, Film, AlertCircle, Loader2, Trash2, KeyRound, CheckCircle2, Compass, LayoutGrid, List, Minus, Square, Copy, X } from 'lucide-react'
 import useProjectStore from '../stores/projectStore'
 import useAssetsStore from '../stores/assetsStore'
@@ -27,130 +27,6 @@ const WELCOME_ASSET_BASE_URL = (() => {
 function getWelcomeAssetPath(filename) {
   const safeFilename = String(filename || '').replace(/^\/+/, '')
   return `${WELCOME_ASSET_BASE_URL}${safeFilename}`
-}
-
-/**
- * Hero loop with soft dissolve between iterations.
- *
- * HTML `<video loop>` restarts hard — perfect for a tight 2s cycle, jarring
- * for a 15s cinematic plate like the kling asset. To get a cross-dissolve
- * we render two `<video>` elements pointed at the same source, each muted
- * and each controlled independently. One plays through, and when it has
- * `fadeSeconds` left we start the other from t=0 and let CSS animate their
- * opacities past each other. On the next handoff we swap roles.
- *
- * Why two videos of the same file instead of a pre-baked crossfade in the
- * MP4 itself: baking the dissolve into the file forces a specific fade
- * duration and introduces a double-exposure region in the asset. Doing it
- * at playback time keeps the asset clean and the fade duration tunable.
- *
- * Why not requestAnimationFrame opacity tweens: `transition: opacity … s
- * linear` on the style attr is cheaper, butter-smooth, and survives React
- * re-renders without custom tear-down code. The only runtime bookkeeping
- * we need is "when remaining time on the active video dips below
- * fadeSeconds, kick off the other one."
- */
-function HeroVideoLoop({ src, poster, fadeSeconds = 5, className = '', style = {} }) {
-  const videoARef = useRef(null)
-  const videoBRef = useRef(null)
-  // `active` is the side currently fading IN / holding the visible frame.
-  // We mirror it into a ref so the timeupdate handlers — which close over
-  // the initial render — read the current value rather than a stale one.
-  const [active, setActive] = useState('A')
-  const activeRef = useRef('A')
-  useEffect(() => { activeRef.current = active }, [active])
-
-  // Kick off the A side on mount. We wait for metadata so `duration` is
-  // available before the first timeupdate fires; otherwise the `remaining`
-  // check would short-circuit with NaN and never trigger the handoff.
-  useEffect(() => {
-    const a = videoARef.current
-    if (!a) return
-    let cancelled = false
-    const tryPlay = () => {
-      if (cancelled) return
-      a.play().catch(() => {
-        // Autoplay blocked. The reduced-motion <img> fallback will show
-        // instead; we don't retry noisily here.
-      })
-    }
-    if (a.readyState >= 1) tryPlay()
-    else a.addEventListener('loadedmetadata', tryPlay, { once: true })
-    return () => {
-      cancelled = true
-      a.removeEventListener('loadedmetadata', tryPlay)
-    }
-  }, [])
-
-  const handleTimeUpdate = (side) => (event) => {
-    const el = event.currentTarget
-    const duration = Number(el.duration) || 0
-    if (!duration || !isFinite(duration)) return
-    const remaining = duration - el.currentTime
-    if (remaining > fadeSeconds) return
-    if (activeRef.current !== side) return
-    // We're the active side and we're inside the fade window — hand off.
-    const otherSide = side === 'A' ? 'B' : 'A'
-    const otherEl = otherSide === 'A' ? videoARef.current : videoBRef.current
-    if (otherEl) {
-      try { otherEl.currentTime = 0 } catch (_) { /* ignore seek failure */ }
-      otherEl.play().catch(() => { /* same rationale as above */ })
-    }
-    activeRef.current = otherSide
-    setActive(otherSide)
-  }
-
-  // Pause the fully-faded-out side when its dissolve completes, so the GPU
-  // doesn't keep decoding two 1080p streams for the ~10s between handoffs.
-  const handleTransitionEnd = (side) => (event) => {
-    if (event.propertyName !== 'opacity') return
-    if (activeRef.current === side) return
-    const el = side === 'A' ? videoARef.current : videoBRef.current
-    if (el && !el.paused) {
-      try { el.pause() } catch (_) { /* ignore */ }
-    }
-  }
-
-  const videoStyle = (side) => ({
-    ...style,
-    opacity: active === side ? 1 : 0,
-    transitionProperty: 'opacity',
-    transitionDuration: `${fadeSeconds}s`,
-    transitionTimingFunction: 'linear',
-  })
-
-  return (
-    <>
-      <video
-        ref={videoARef}
-        src={src}
-        poster={poster}
-        className={className}
-        style={videoStyle('A')}
-        muted
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-        draggable={false}
-        onTimeUpdate={handleTimeUpdate('A')}
-        onTransitionEnd={handleTransitionEnd('A')}
-      />
-      <video
-        ref={videoBRef}
-        src={src}
-        poster={poster}
-        className={className}
-        style={videoStyle('B')}
-        muted
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-        draggable={false}
-        onTimeUpdate={handleTimeUpdate('B')}
-        onTransitionEnd={handleTransitionEnd('B')}
-      />
-    </>
-  )
 }
 
 function WelcomeScreen() {
@@ -208,8 +84,7 @@ function WelcomeScreen() {
     ? Math.round((mediaPreparationCompleted / mediaPreparationTotal) * 100)
     : 0
   const showMediaPreparation = Boolean(isLoading && mediaPreparation?.active && mediaPreparationTotal > 0)
-  const welcomeHeroVideoSrc = getWelcomeAssetPath('velorn-project-selection-page.mp4')
-  const welcomeHeroPosterSrc = getWelcomeAssetPath('velorn-home-balanced-plate-4.webp')
+  const welcomeBrandIconSrc = getWelcomeAssetPath('monstruo-studio-app-icon.svg')
   const desktopMode = isElectronMode()
   
   // Keep partner-key status fresh so the chip in the header reflects
@@ -480,8 +355,10 @@ function WelcomeScreen() {
         <div className="flex-1 flex items-center justify-center">
           <div className="max-w-md w-full mx-4">
           {/* Branding */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-sf-text-primary">Velorn</h1>
+          <div className="mb-8 flex flex-col items-center text-center">
+            <img src={welcomeBrandIconSrc} alt="" className="mb-4 h-24 w-24" />
+            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-sf-accent">El Monstruo</div>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight text-sf-text-primary">Monstruo Studio</h1>
           </div>
           
           {/* Browser Support Warning - only show in web mode */}
@@ -646,50 +523,25 @@ function WelcomeScreen() {
       {mediaPreparationBanner}
 
       {showHeroBackground ? (
-        /* Hero band: full-bleed dark outer, centered cinematic inner. */
-        <div className="welcome-hero relative z-0 flex-shrink-0 h-[62vh] min-h-[420px] max-h-[720px] overflow-visible select-none bg-sf-dark-950">
-          <div className="relative mx-auto h-full w-full max-w-[2400px] overflow-visible">
-            {/* Keep the overlay text locked to the same 16:9 plate as the logo media. */}
-            <div
-              className="absolute left-1/2 top-0 aspect-video"
-              style={{
-                width: 'max(100%, calc(100vh * 16 / 9))',
-                transform: 'translateX(-50%) translateY(-8%) scale(1.08)',
-                transformOrigin: 'center top',
-              }}
-            >
-              <HeroVideoLoop
-                src={welcomeHeroVideoSrc}
-                poster={welcomeHeroPosterSrc}
-                fadeSeconds={2}
-                className="absolute inset-0 h-full w-full object-cover"
+        <div className="welcome-hero relative z-0 flex-shrink-0 h-[62vh] min-h-[420px] max-h-[720px] overflow-hidden select-none bg-black">
+          <div className="absolute inset-x-0 top-0 h-px bg-sf-accent" aria-hidden="true" />
+          <div className="relative mx-auto flex h-full w-full max-w-6xl items-start px-8 pt-16">
+            <div className="flex items-center gap-8 rounded-3xl border border-sf-dark-700 bg-sf-dark-900/85 p-7">
+              <img
+                src={welcomeBrandIconSrc}
+                alt="Monograma MS de Monstruo Studio"
+                className="h-36 w-36 flex-shrink-0"
+                draggable={false}
               />
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background: [
-                    'linear-gradient(90deg, rgba(3, 6, 16, 0.74) 0%, rgba(3, 6, 16, 0.22) 20%, rgba(3, 6, 16, 0) 42%, rgba(3, 6, 16, 0) 58%, rgba(3, 6, 16, 0.24) 80%, rgba(3, 6, 16, 0.76) 100%)',
-                    'linear-gradient(180deg, rgba(3, 6, 16, 0.22) 0%, rgba(3, 6, 16, 0) 28%, rgba(3, 6, 16, 0.18) 64%, rgba(3, 6, 16, 0.68) 100%)',
-                    'radial-gradient(ellipse at center, rgba(3, 6, 16, 0) 0%, rgba(3, 6, 16, 0) 42%, rgba(3, 6, 16, 0.22) 72%, rgba(3, 6, 16, 0.48) 100%)',
-                  ].join(', '),
-                }}
-              />
-              <div
-                className="absolute whitespace-nowrap text-right font-semibold uppercase tracking-[0.22em] text-[#f2d590]/90 pointer-events-none"
-                style={{
-                  top: '31.6%',
-                  right: '35%',
-                  fontSize: 'clamp(7px, 0.39vw, 9.4px)',
-                  textShadow: '0 0 14px rgba(247, 210, 132, 0.5), 0 0 5px rgba(255, 231, 176, 0.22), 0 1px 8px rgba(0, 0, 0, 0.72)',
-                }}
-              >
-                Generate shots. Shape edits. Deliver stories.
+              <div className="max-w-xl">
+                <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-sf-accent">El Monstruo</div>
+                <h1 className="mt-3 text-5xl font-bold tracking-[-0.045em] text-sf-text-primary">Monstruo Studio</h1>
+                <p className="mt-4 text-base leading-relaxed text-sf-text-secondary">
+                  Genera, edita, calibra y entrega historias desde un solo estudio multimedia asistido por IA.
+                </p>
+                <div className="mt-6 h-0.5 w-16 bg-sf-accent" aria-hidden="true" />
               </div>
             </div>
-          </div>
-          {/* Subtle attribution */}
-          <div className="absolute bottom-3 right-4 text-[10px] uppercase tracking-wider text-white/40 pointer-events-none">
-            Made with Velorn
           </div>
         </div>
       ) : null}
@@ -699,7 +551,7 @@ function WelcomeScreen() {
           visible above the fold. */}
       <div
         className={`flex-1 overflow-auto px-6 pb-8 ${showHeroBackground
-          ? 'relative z-10 -mt-[305px] pt-12'
+          ? 'relative z-10 -mt-[190px] pt-12'
           : 'py-8'}`}
       >
         <div className="max-w-5xl mx-auto">
@@ -959,12 +811,12 @@ function WelcomeScreen() {
         
         {/* Projects Location Info */}
         <div className="text-center text-xs text-sf-text-muted">
-          <p className="inline-flex items-center rounded-full border border-white/10 bg-black/60 px-3 py-1.5 shadow-lg shadow-black/50 backdrop-blur-md">
-            {t('welcome.projectsSavedTo')} <span className="text-sf-text-secondary">{defaultProjectsLocation || t('common.notSet')}</span>
-            {' '}
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-3 py-1.5 shadow-lg shadow-black/50 backdrop-blur-md">
+            <span>{t('welcome.projectsSavedTo')}</span>
+            <span className="text-sf-text-secondary">{defaultProjectsLocation || t('common.notSet')}</span>
             <button 
               onClick={selectDefaultProjectsLocation}
-              className="text-sf-accent hover:underline"
+              className="ml-1 text-sf-accent hover:underline"
             >
               {t('common.change')}
             </button>

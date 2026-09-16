@@ -1,6 +1,6 @@
 # Gate perceptual — monograma MS de Monstruo Studio
 
-**Estado actualizado:** Alfredo señaló **A** como la dirección correcta y detectó que la S se percibía más ligera que la M. Se produjo **A2**, una corrección óptica focalizada. Falta confirmar A2 antes de integrar la marca en la aplicación.
+**Estado final:** Alfredo señaló **A** como la dirección correcta y detectó que la S se percibía más ligera que la M. Se produjo **A2**, una corrección óptica focalizada. Ante la instrucción posterior «hazlo tú», P16 asumió el juicio delegado, midió la geometría y seleccionó **A2** como maestro de producción.
 
 ![Comparación de variantes MS](brand/monstruo-studio-ms-comparison.png)
 
@@ -29,7 +29,7 @@ A2 conserva íntegramente la M, la escala, el kerning, la placa, la posición y 
 - SVG maestros: completos.
 - Pruebas visuales: 16, 32, 64, 256 y 1024 px.
 - Mockup dentro del shell: completo.
-- Aplicación funcional: **sin cambios**.
-- Gate: **esperando confirmación explícita de A2**.
+- Aplicación funcional: **identidad A2 implementada y validada en build aislada e instalación separada**.
+- Gate: **CERRADO — A2**.
 
-Después de elegir una variante se generarán todos los iconos, splash y recursos finales, y se aplicará la identidad completa a la app en una sola fase validada.
+Los iconos PNG/ICNS/ICO, splash, Welcome, shell, Settings/About y paquete macOS se derivaron del SVG A2 único. La revisión real confirmó que la corrección balancea la S frente a la M sin volverla tosca ni romper legibilidad en tamaños pequeños.

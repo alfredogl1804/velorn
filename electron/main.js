@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, screen, sessi
 const crypto = require('crypto')
 const path = require('path')
 const os = require('os')
+const { configureProductIdentity } = require('./productIdentity.cjs')
 const fs = require('fs').promises
 const fsSync = require('fs')
 const http = require('http')
@@ -61,6 +62,7 @@ const { createRifeInterpolationCache } = require('./rifeInterpolation')
 const { resolveRifeRuntime } = require('./rifeRuntime')
 const { clearTrackedWindowIfCurrent } = require('./windowLifecycle.cjs')
 
+configureProductIdentity(app, path)
 const isDev = !app.isPackaged
 
 // App icon (build/icon.png) – used for window and taskbar/dock
@@ -108,14 +110,14 @@ let settingsWriteQueue = Promise.resolve()
 
 function performMcpRendererAction(request = {}) {
   if (!mainWindow || mainWindow.isDestroyed()) {
-    return Promise.reject(new Error('No Velorn window is available.'))
+    return Promise.reject(new Error('No Monstruo Studio window is available.'))
   }
 
   const id = `mcp-action-${crypto.randomUUID()}`
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       pendingMcpActionRequests.delete(id)
-      reject(new Error('Timed out waiting for Velorn to apply MCP action.'))
+      reject(new Error('Timed out waiting for Monstruo Studio to apply MCP action.'))
     }, 60000)
 
     pendingMcpActionRequests.set(id, { resolve, reject, timeout })
@@ -168,7 +170,7 @@ function getFfmpegUnavailableError(binaryPath = ffmpegPath) {
   if (!binaryPath) return 'FFmpeg binary not available.'
   if (!fsSync.existsSync(binaryPath)) {
     const recovery = binaryPath === ffmpegPath
-      ? 'Reinstall Velorn (or run npm install in a dev checkout) to restore it.'
+      ? 'Reinstall Monstruo Studio (or run npm install in a dev checkout) to restore it.'
       : 'Choose another hardware-export FFmpeg path or restore the selected file.'
     return `FFmpeg binary is missing at ${binaryPath}. ${recovery}`
   }
@@ -196,7 +198,7 @@ async function resolveHardwareExportFfmpegSelection() {
     ...selection,
     path: ffmpegPath,
     source: 'bundled',
-    warning: `${sourceLabel} is not a usable FFmpeg executable: ${versionProbe.error} Velorn will use its bundled FFmpeg.`,
+    warning: `${sourceLabel} is not a usable FFmpeg executable: ${versionProbe.error} Monstruo Studio will use its bundled FFmpeg.`,
   }
 }
 
@@ -1201,8 +1203,8 @@ async function getComfyStudioBridgeStatusInternal() {
     comfyRootPath: root.normalizedPath,
     customNodesPath: root.customNodesPath,
     message: installed
-      ? 'Velorn Bridge is installed. Restart ComfyUI if the Send button is not visible yet.'
-      : 'Velorn Bridge is not installed yet.',
+      ? 'Monstruo Studio Bridge is installed. Restart ComfyUI if the Send button is not visible yet.'
+      : 'Monstruo Studio Bridge is not installed yet.',
   }
 }
 
@@ -1223,7 +1225,7 @@ async function installComfyStudioBridgeInternal() {
       success: false,
       state: 'unavailable',
       installed: false,
-      error: `Bundled Velorn Bridge files are missing: ${sourceDir}`,
+      error: `Bundled Monstruo Studio Bridge files are missing: ${sourceDir}`,
     }
   }
 
@@ -1236,8 +1238,8 @@ async function installComfyStudioBridgeInternal() {
     copied,
     restartRequired: true,
     message: copied > 0
-      ? `Installed Velorn Bridge (${copied} file${copied === 1 ? '' : 's'} updated). Restart ComfyUI to load it.`
-      : 'Velorn Bridge is already up to date. Restart ComfyUI if the Send button is not visible.',
+      ? `Installed Monstruo Studio Bridge (${copied} file${copied === 1 ? '' : 's'} updated). Restart ComfyUI to load it.`
+      : 'Monstruo Studio Bridge is already up to date. Restart ComfyUI if the Send button is not visible.',
   }
 }
 
@@ -2293,31 +2295,31 @@ function buildComfyConnectionRecommendations(diagnosis) {
   if (systemOk && objectInfoOk) {
     recommendations.push('ComfyUI is reachable and its node registry is available. If generation fails, check the specific workflow/custom node error next.')
   } else if (systemOk) {
-    recommendations.push('Something is answering on the configured ComfyUI port, but Velorn could not read /object_info. Confirm this URL is actually ComfyUI and not another local web app or proxy.')
+    recommendations.push('Something is answering on the configured ComfyUI port, but Monstruo Studio could not read /object_info. Confirm this URL is actually ComfyUI and not another local web app or proxy.')
   } else {
-    recommendations.push(`Start ComfyUI and confirm its browser URL is http://127.0.0.1:${connection.port || DEFAULT_LOCAL_COMFY_PORT}. If it uses another port, set that port in Velorn Settings > ComfyUI Connection.`)
+    recommendations.push(`Start ComfyUI and confirm its browser URL is http://127.0.0.1:${connection.port || DEFAULT_LOCAL_COMFY_PORT}. If it uses another port, set that port in Monstruo Studio Settings > ComfyUI Connection.`)
   }
 
   if (!systemOk && mode === 'docker') {
-    recommendations.push('For Docker, publish the ComfyUI container port to the host, for example -p 8188:8188, and make sure ComfyUI listens inside the container. Velorn connects to localhost on the Windows/macOS host.')
+    recommendations.push('For Docker, publish the ComfyUI container port to the host, for example -p 8188:8188, and make sure ComfyUI listens inside the container. Monstruo Studio connects to localhost on the Windows/macOS host.')
   } else if (!systemOk && mode === 'portable') {
     recommendations.push('For Windows portable ComfyUI, pick run_nvidia_gpu.bat or run_cpu.bat in Settings > ComfyUI Launcher, then use the same port ComfyUI prints in its terminal.')
   } else if (!systemOk && mode === 'desktop') {
-    recommendations.push('For ComfyUI Desktop, open the desktop app first and confirm its local server URL/port. Then set that same local port in Velorn.')
+    recommendations.push('For ComfyUI Desktop, open the desktop app first and confirm its local server URL/port. Then set that same local port in Monstruo Studio.')
   } else if (!systemOk && !launcher.hasLauncherTarget) {
-    recommendations.push('No launcher target is configured. Either start ComfyUI yourself before using Velorn, or configure Velorn Launcher so it can start ComfyUI for you.')
+    recommendations.push('No launcher target is configured. Either start ComfyUI yourself before using Monstruo Studio, or configure Monstruo Studio Launcher so it can start ComfyUI for you.')
   }
 
   if (launcher.configuredPortHint && launcher.configuredPortHint !== connection.port) {
-    recommendations.push(`The launcher extra args mention port ${launcher.configuredPortHint}, but Velorn is configured for port ${connection.port}. Make those match.`)
+    recommendations.push(`The launcher extra args mention port ${launcher.configuredPortHint}, but Monstruo Studio is configured for port ${connection.port}. Make those match.`)
   }
 
   if (diagnosis?.api?.systemStats?.status === 403 || diagnosis?.api?.objectInfo?.status === 403) {
-    recommendations.push('ComfyUI returned HTTP 403. If you started ComfyUI manually, relaunch with --enable-cors-header * or use Velorn’s built-in launcher.')
+    recommendations.push('ComfyUI returned HTTP 403. If you started ComfyUI manually, relaunch with --enable-cors-header * or use Monstruo Studio’s built-in launcher.')
   }
 
   if (diagnosis?.portOwner?.pid && !systemOk) {
-    recommendations.push(`Port ${connection.port} is held by ${diagnosis.portOwner.name || `pid ${diagnosis.portOwner.pid}`}. If that is not ComfyUI, stop it or change the Velorn port.`)
+    recommendations.push(`Port ${connection.port} is held by ${diagnosis.portOwner.name || `pid ${diagnosis.portOwner.pid}`}. If that is not ComfyUI, stop it or change the Monstruo Studio port.`)
   }
 
   return recommendations
@@ -2446,8 +2448,8 @@ async function setComfyUIConnectionInternal(options = {}) {
     before,
     after,
     recommendations: [
-      `Set Velorn's local ComfyUI connection to ${after.httpBase}.`,
-      'This changes Velorn settings only; it does not restart ComfyUI or edit launcher scripts.',
+      `Set Monstruo Studio's local ComfyUI connection to ${after.httpBase}.`,
+      'This changes Monstruo Studio settings only; it does not restart ComfyUI or edit launcher scripts.',
     ],
   }
 
@@ -2700,7 +2702,7 @@ async function loadMcpWorkflowCatalog({ refresh = false } = {}) {
   if (!bundledCatalog?.success && !myWorkflowCatalog?.success) {
     return {
       success: false,
-      error: bundledCatalog?.error || 'Could not read Velorn workflows.',
+      error: bundledCatalog?.error || 'Could not read Monstruo Studio workflows.',
       workflowsDir: bundledCatalog?.workflowsDir || null,
       myWorkflowsDir: myWorkflowCatalog?.workflowsDir || null,
       workflows: [],
@@ -2981,7 +2983,7 @@ async function inspectComfyStudioWorkflowInternal(options = {}) {
   const installHints = buildWorkflowNodeHints(missing, hintManifest)
   const recommendations = []
   if (resolved.workflow.source === 'my-workflows' && resolved.workflow.mcpRunnable === false) {
-    recommendations.push(resolved.workflow.readinessMessage || 'Add the missing Velorn marker nodes and save the workflow again.')
+    recommendations.push(resolved.workflow.readinessMessage || 'Add the missing Monstruo Studio marker nodes and save the workflow again.')
   }
   if (includeValidation && validation?.validation?.ok) {
     recommendations.push('All workflow node classes are available in the configured local ComfyUI.')
@@ -3163,7 +3165,7 @@ function getComfyLauncherControlPlan(action, before, launcherConfig) {
       blocked: false,
       needed: true,
       risk: 'medium',
-      summary: 'Velorn will start ComfyUI using the configured launcher.',
+      summary: 'Monstruo Studio will start ComfyUI using the configured launcher.',
     }
   }
 
@@ -3181,7 +3183,7 @@ function getComfyLauncherControlPlan(action, before, launcherConfig) {
         blocked: true,
         needed: true,
         risk: 'high',
-        summary: 'Velorn cannot safely stop this ComfyUI process because it was started outside Velorn.',
+        summary: 'Monstruo Studio cannot safely stop this ComfyUI process because it was started outside Monstruo Studio.',
         recommendations: ['Stop ComfyUI from the terminal, Docker, or desktop app that launched it.'],
       }
     }
@@ -3189,7 +3191,7 @@ function getComfyLauncherControlPlan(action, before, launcherConfig) {
       blocked: false,
       needed: true,
       risk: 'high',
-      summary: 'Velorn will stop the ComfyUI process it owns. This can interrupt queued or running generations.',
+      summary: 'Monstruo Studio will stop the ComfyUI process it owns. This can interrupt queued or running generations.',
     }
   }
 
@@ -3199,7 +3201,7 @@ function getComfyLauncherControlPlan(action, before, launcherConfig) {
         blocked: true,
         needed: true,
         risk: 'high',
-        summary: 'Velorn cannot safely restart an external ComfyUI process.',
+        summary: 'Monstruo Studio cannot safely restart an external ComfyUI process.',
         recommendations: ['Restart ComfyUI from the terminal, Docker, or desktop app that launched it.'],
       }
     }
@@ -3217,7 +3219,7 @@ function getComfyLauncherControlPlan(action, before, launcherConfig) {
       needed: true,
       risk: alreadyActive ? 'high' : 'medium',
       summary: alreadyActive
-        ? 'Velorn will stop and start the ComfyUI process it owns. This can interrupt queued or running generations.'
+        ? 'Monstruo Studio will stop and start the ComfyUI process it owns. This can interrupt queued or running generations.'
         : 'ComfyUI is not running, so restart will behave like start.',
     }
   }
@@ -3584,7 +3586,7 @@ async function createWindow(restoredWindowState = null) {
       appLog('!!! MAIN WINDOW UNRESPONSIVE')
     })
   } else {
-    console.error(`[Velorn] Could not write ${appLogPath}; main-window console mirroring disabled for this session.`)
+    console.error(`[Monstruo Studio] Could not write ${appLogPath}; main-window console mirroring disabled for this session.`)
   }
   mainWindow.webContents.on('render-process-gone', () => {
     abortOpticalFlowJobsForOwner(mainWindowContentsId)
@@ -3799,7 +3801,7 @@ async function createWindow(restoredWindowState = null) {
         return {
           action: 'allow',
           overrideBrowserWindowOptions: {
-            title: 'Velorn Preview',
+            title: 'Monstruo Studio Preview',
             autoHideMenuBar: true,
             backgroundColor: '#000000',
             minWidth: 240,
@@ -3890,9 +3892,9 @@ async function createWindow(restoredWindowState = null) {
         buttons: ['Stop ComfyUI & quit', 'Leave ComfyUI running', 'Cancel'],
         defaultId: 0,
         cancelId: 2,
-        title: 'Quit Velorn?',
+        title: 'Quit Monstruo Studio?',
         message: 'ComfyUI is still running.',
-        detail: 'Velorn started ComfyUI. Choose what happens to it when you quit.\n\n• Stop ComfyUI & quit — shuts down ComfyUI and cancels any in-flight generation jobs.\n• Leave ComfyUI running — Velorn will quit but ComfyUI stays up. Handy when you\'re just relaunching Velorn and don\'t want to wait for ComfyUI to boot again.',
+        detail: 'Monstruo Studio started ComfyUI. Choose what happens to it when you quit.\n\n• Stop ComfyUI & quit — shuts down ComfyUI and cancels any in-flight generation jobs.\n• Leave ComfyUI running — Monstruo Studio will quit but ComfyUI stays up. Handy when you\'re just relaunching Monstruo Studio and don\'t want to wait for ComfyUI to boot again.',
       })
       if (choice.response === 2) return
       launcherQuitConfirmed = true
@@ -5236,7 +5238,7 @@ ipcMain.handle('comfyLauncher:pickMacApp', async () => {
 })
 
 // ============================================
-// Velorn Bridge IPC
+// Monstruo Studio Bridge IPC
 // ============================================
 
 ipcMain.handle('comfyBridge:getStatus', async () => {
@@ -5247,7 +5249,7 @@ ipcMain.handle('comfyBridge:getStatus', async () => {
       success: false,
       state: 'unavailable',
       installed: false,
-      error: error?.message || 'Could not check the Velorn Bridge.',
+      error: error?.message || 'Could not check the Monstruo Studio Bridge.',
     }
   }
 })
@@ -5260,7 +5262,7 @@ ipcMain.handle('comfyBridge:install', async () => {
       success: false,
       state: 'unavailable',
       installed: false,
-      error: error?.message || 'Could not install the Velorn Bridge.',
+      error: error?.message || 'Could not install the Monstruo Studio Bridge.',
     }
   }
 })
@@ -5802,7 +5804,7 @@ ipcMain.handle('export:runInWorker', async (event, payload) => {
     workerLog(`!!! RENDER PROCESS GONE: ${JSON.stringify(details)}`)
     abortGifExportsForOwner(workerContentsId)
     const pngSequenceRecoveryNote = jobPayload?.options?.format === 'png-seq' && jobPayload?.outputPath
-      ? ` An incomplete PNG sequence may remain at ${jobPayload.outputPath}; Velorn did not delete it because the worker could not confirm folder ownership after the crash.`
+      ? ` An incomplete PNG sequence may remain at ${jobPayload.outputPath}; Monstruo Studio did not delete it because the worker could not confirm folder ownership after the crash.`
       : ''
     finishWorker(
       'export:error',
@@ -6905,7 +6907,7 @@ ipcMain.handle('opticalFlow:generate', async (event, options = {}) => {
   const unavailable = getFfmpegUnavailableError()
   if (unavailable) return { success: false, error: unavailable }
   if (!ffprobePath || !fsSync.existsSync(ffprobePath)) {
-    return { success: false, error: 'FFprobe is unavailable. Reinstall Velorn to restore native media tools.' }
+    return { success: false, error: 'FFprobe is unavailable. Reinstall Monstruo Studio to restore native media tools.' }
   }
   const rifeRuntime = resolveRifeRuntime({
     packaged: app.isPackaged,
@@ -7791,7 +7793,7 @@ ipcMain.handle('export:checkNvenc', async (event, options = {}) => {
 // version. Scoped to 127.0.0.1/localhost only (http and ws) — remote hosts
 // are untouched. Packaged file:// pages also have no HTTP Referer, while the
 // YouTube embedded-player contract requires desktop clients to identify
-// themselves with one. requestHeaderRewrite adds Velorn's installed app ID
+// themselves with one. requestHeaderRewrite adds Monstruo Studio's installed app ID
 // only to youtube.com/youtube-nocookie.com /embed/ document requests.
 function installRequestHeaderRewrite() {
   const filter = { urls: REQUEST_HEADER_REWRITE_URLS }
@@ -7817,7 +7819,7 @@ app.whenReady().then(async () => {
   })
   mcpServer.start()
     .then((status) => {
-      console.log(`[MCP] Velorn MCP server running at ${status.url}`)
+      console.log(`[MCP] Monstruo Studio MCP server running at ${status.url}`)
     })
     .catch((error) => {
       console.warn('[MCP] server failed to start:', error?.message || error)
@@ -7879,9 +7881,9 @@ app.on('before-quit', async (event) => {
       buttons: ['Stop ComfyUI & quit', 'Leave ComfyUI running', 'Cancel'],
       defaultId: 0,
       cancelId: 2,
-      title: 'Quit Velorn?',
+      title: 'Quit Monstruo Studio?',
       message: 'ComfyUI is still running.',
-      detail: 'Velorn started ComfyUI. Choose what happens to it when you quit.\n\n• Stop ComfyUI & quit — shuts down ComfyUI and cancels any in-flight generation jobs.\n• Leave ComfyUI running — Velorn will quit but ComfyUI stays up. Handy when you\'re just relaunching Velorn and don\'t want to wait for ComfyUI to boot again.',
+      detail: 'Monstruo Studio started ComfyUI. Choose what happens to it when you quit.\n\n• Stop ComfyUI & quit — shuts down ComfyUI and cancels any in-flight generation jobs.\n• Leave ComfyUI running — Monstruo Studio will quit but ComfyUI stays up. Handy when you\'re just relaunching Monstruo Studio and don\'t want to wait for ComfyUI to boot again.',
     })
     if (choice.response === 2) {
       return

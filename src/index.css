@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,34 +18,34 @@
    ============================================= */
 
 :root {
-  /* ---- Velorn (default) ---- */
-  --sf-dark-950: 3 6 16;
-  --sf-dark-900: 8 12 26;
-  --sf-dark-800: 17 23 42;
-  --sf-dark-700: 31 31 58;
-  --sf-dark-600: 48 43 82;
-  --sf-dark-500: 76 66 112;
-  --sf-dark-400: 112 98 150;
+  /* ---- Monstruo Studio (default) ---- */
+  --sf-dark-950: 0 0 0;
+  --sf-dark-900: 7 10 12;
+  --sf-dark-800: 13 17 20;
+  --sf-dark-700: 24 30 34;
+  --sf-dark-600: 39 48 53;
+  --sf-dark-500: 61 73 79;
+  --sf-dark-400: 92 108 115;
 
-  --sf-accent: 152 112 0;
-  --sf-accent-hover: 174 130 16;
-  --sf-accent-muted: 116 86 20;
+  --sf-accent: 0 229 255;
+  --sf-accent-hover: 45 235 255;
+  --sf-accent-muted: 0 153 170;
 
-  --sf-blue: 92 155 220;
-  --sf-blue-hover: 112 176 240;
-  --sf-blue-muted: 62 118 184;
+  --sf-blue: 0 191 214;
+  --sf-blue-hover: 39 208 229;
+  --sf-blue-muted: 0 126 143;
 
-  --sf-clip-video: 54 138 178;
-  --sf-clip-audio: 126 78 172;
-  --sf-clip-text: 190 140 42;
+  --sf-clip-video: 0 155 177;
+  --sf-clip-audio: 87 121 138;
+  --sf-clip-text: 0 229 255;
 
-  --sf-success: 60 190 138;
-  --sf-warning: 152 112 0;
+  --sf-success: 56 189 137;
+  --sf-warning: 224 178 74;
   --sf-error: 238 92 118;
 
-  --sf-text-primary: 244 238 248;
-  --sf-text-secondary: 214 207 226;
-  --sf-text-muted: 160 151 180;
+  --sf-text-primary: 245 248 249;
+  --sf-text-secondary: 190 201 206;
+  --sf-text-muted: 119 135 142;
 }
 
 [data-theme="high-contrast"] {
@@ -123,33 +131,34 @@
 }
 
 [data-theme="velorn"] {
-  --sf-dark-950: 3 6 16;
-  --sf-dark-900: 8 12 26;
-  --sf-dark-800: 17 23 42;
-  --sf-dark-700: 31 31 58;
-  --sf-dark-600: 48 43 82;
-  --sf-dark-500: 76 66 112;
-  --sf-dark-400: 112 98 150;
+  /* ---- Monstruo Studio (default) ---- */
+  --sf-dark-950: 0 0 0;
+  --sf-dark-900: 7 10 12;
+  --sf-dark-800: 13 17 20;
+  --sf-dark-700: 24 30 34;
+  --sf-dark-600: 39 48 53;
+  --sf-dark-500: 61 73 79;
+  --sf-dark-400: 92 108 115;
 
-  --sf-accent: 152 112 0;
-  --sf-accent-hover: 174 130 16;
-  --sf-accent-muted: 116 86 20;
+  --sf-accent: 0 229 255;
+  --sf-accent-hover: 45 235 255;
+  --sf-accent-muted: 0 153 170;
 
-  --sf-blue: 92 155 220;
-  --sf-blue-hover: 112 176 240;
-  --sf-blue-muted: 62 118 184;
+  --sf-blue: 0 191 214;
+  --sf-blue-hover: 39 208 229;
+  --sf-blue-muted: 0 126 143;
 
-  --sf-clip-video: 54 138 178;
-  --sf-clip-audio: 126 78 172;
-  --sf-clip-text: 190 140 42;
+  --sf-clip-video: 0 155 177;
+  --sf-clip-audio: 87 121 138;
+  --sf-clip-text: 0 229 255;
 
-  --sf-success: 60 190 138;
-  --sf-warning: 152 112 0;
+  --sf-success: 56 189 137;
+  --sf-warning: 224 178 74;
   --sf-error: 238 92 118;
 
-  --sf-text-primary: 244 238 248;
-  --sf-text-secondary: 214 207 226;
-  --sf-text-muted: 160 151 180;
+  --sf-text-primary: 245 248 249;
+  --sf-text-secondary: 190 201 206;
+  --sf-text-muted: 119 135 142;
 }
 
 [data-theme="arctic"] {
@@ -220,7 +229,7 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   background-color: rgb(var(--sf-dark-950));
   color: rgb(var(--sf-text-primary));
   -webkit-font-smoothing: antialiased;

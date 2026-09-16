@@ -72,7 +72,7 @@ const PROFILE_DESCRIPTORS = Object.freeze([
     routeEvidenceLevel: 'PRODUCT_PROVEN',
     evidence: Object.freeze({
       artifact: 'WAN-ANIMATE-PRODUCT-01',
-      summary: 'Three intentional variants were compared in Velorn; V2 won. Full-frame output was rejected for background/halo drift and retained only as a reversible face-only identity source.',
+      summary: 'Three intentional variants were compared in Monstruo Studio; V2 won. Full-frame output was rejected for background/halo drift and retained only as a reversible face-only identity source.',
       observedCalibration: Object.freeze({
         winner: Object.freeze({ referenceImageStrength: 1.35, poseStrength: 1.25 }),
         highMotionTradeoff: 'pose_strength 1.45 increased motion but introduced morphing.',

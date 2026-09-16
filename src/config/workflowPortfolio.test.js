@@ -109,7 +109,7 @@ test('marks frontier templates blocked without inflating installed weights into 
   assert.match(trellis.limitation, /weights.*absent/i)
 })
 
-test('keeps audio product evidence narrower than the exact Velorn route', () => {
+test('keeps audio product evidence narrower than the exact Monstruo Studio route', () => {
   const elevenLabs = getWorkflowOperationalMetadata({
     id: 'elevenlabs-tts',
     workflowId: 'elevenlabs-tts',
@@ -257,7 +257,7 @@ test('derives operational metadata without duplicating workflow bindings', () =>
     workflowId: 'custom-candidate',
     route: 'custom',
     category: 'video',
-    provider: 'Velorn',
+    provider: 'Monstruo Studio',
     fields: [{ id: 'prompt' }],
     runnable: true,
   }

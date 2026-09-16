@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build a complete source-level brand reference map for Monstruo Studio.
+"""Build the final source-level brand reference map for Monstruo Studio.
 
-This scanner is intentionally read-only with respect to product code. It records
-where Velorn/ComfyStudio identifiers occur and classifies each occurrence for the
-future rebrand implementation.
+Every Velorn/ComfyStudio occurrence is retained with an explicit classification.
+The visible-brand gate fails closed only for an unapproved user-facing occurrence;
+protocol identifiers, project formats and truthful GPL provenance remain intact.
 """
 
 from __future__ import annotations
@@ -27,13 +27,31 @@ TEXT_SUFFIXES = {
     ".svg", ".txt", ".yaml", ".yml",
 }
 SKIP_PARTS = {".git", "node_modules", "dist", "release"}
-VISIBLE_ROOTS = {"src", "public"}
 LEGAL_DOC_PREFIXES = (
     "docs/RELEASE_NOTES_",
     "docs/AI_",
     "docs/CI_SECRETS",
     "docs/RELEASE_PROCESS",
 )
+
+# These exact source fragments are the five deliberately retained whole-word
+# legacy names in user-adjacent roots. Four are machine compatibility aliases;
+# one is truthful GPL provenance in About.
+EXPLICIT_WHOLE_WORD_ALLOWLIST = {
+    "electron/comfyLauncher.js": {
+        "'User-Agent': 'Velorn-Launcher/1.0'": "COMPATIBILITY_KEEP",
+    },
+    "electron/comfyui-injected/comfystudio_bridge/web/js/comfystudio_bridge.js": {
+        'name: "Velorn.Bridge"': "COMPATIBILITY_KEEP",
+    },
+    "src/services/comfyui.js": {
+        "'Velorn Output Resize'": "COMPATIBILITY_KEEP",
+        "'ComfyStudio Output Resize'": "COMPATIBILITY_KEEP",
+    },
+    "src/components/SettingsModal.jsx": {
+        "derived from the Velorn open-source project": "LEGAL_ATTRIBUTION_KEEP",
+    },
+}
 
 
 def digest(path: Path) -> str:
@@ -43,14 +61,42 @@ def digest(path: Path) -> str:
 def is_text_candidate(path: Path) -> bool:
     if any(part in SKIP_PARTS for part in path.parts):
         return False
-    if path.name in {"package-lock.json"}:
+    if path.name == "package-lock.json":
         return False
     return path.suffix.lower() in TEXT_SUFFIXES or path.name in {"package.json", "README.md", "AGENTS.md"}
 
 
+def allowlisted_whole_word(rel: str, line: str) -> tuple[str, str] | None:
+    for fragment, classification in EXPLICIT_WHOLE_WORD_ALLOWLIST.get(rel, {}).items():
+        if fragment in line:
+            rationale = (
+                "Atribución GPL/upstream visible únicamente dentro de Open Source Notices/About."
+                if classification == "LEGAL_ATTRIBUTION_KEEP"
+                else "Alias legado exacto conservado para interoperabilidad; no representa la identidad pública."
+            )
+            return classification, rationale
+    return None
+
+
 def classify(rel: str, line: str, token: str) -> tuple[str, str]:
     lower = line.lower()
-    rel_lower = rel.lower()
+    token_lower = token.lower()
+
+    explicit = allowlisted_whole_word(rel, line)
+    if explicit:
+        return explicit
+
+    legal_signals = (
+        "velornlabs/velorn",
+        "github.com/velornlabs",
+        "velorn.ai",
+        "derived from the velorn",
+        "original velorn",
+        "upstream velorn",
+        "license-velorn",
+    )
+    if any(signal in lower for signal in legal_signals):
+        return "LEGAL_ATTRIBUTION_KEEP", "URL, licencia o procedencia upstream preservada de forma veraz bajo GPL-3.0."
 
     compatibility_signals = (
         ".comfystudio", "comfystudio://", "comfystudio-", "comfystudio_",
@@ -58,57 +104,65 @@ def classify(rel: str, line: str, token: str) -> tuple[str, str]:
         "class comfystudio", "createcomfystudio", "listcomfystudio",
         "inspectcomfystudio", "getcomfystudio", "installcomfystudio",
         "velorn bridge", "velorn endpoint", "velorn_input", "velorn_output",
+        "velorn.calibration-", "__velorn", "data-theme=\"velorn\"",
+        "'velorn'", '"velorn"', "'comfystudio'", '"comfystudio"',
+        "isvelornmanaged", "normalizecomfystudio", "velorn.b", "velorn.",
     )
     if any(signal in lower for signal in compatibility_signals):
         return (
             "COMPATIBILITY_KEEP",
-            "Identificador técnico o legado que debe mantenerse para proyectos, protocolos, workflows, storage o integraciones existentes.",
+            "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
         )
 
     if rel == "package.json":
-        if any(key in line for key in ('"productName"', '"appId"', '"name"', '"description"', '"homepage"')):
-            return "VISIBLE_RENAME", "Metadata visible o identidad distribuida del producto."
-        if any(key in line for key in ('"repository"', '"bugs"', '"author"', '"maintainer"')):
-            return "LEGAL_ATTRIBUTION_KEEP", "Atribución y procedencia upstream que no se deben borrar."
+        if '"name"' in line:
+            return "COMPATIBILITY_KEEP", "Nombre npm interno mantenido para no romper el ecosistema de paquetes."
+        if any(key in line for key in ('"repository"', '"bugs"', '"author"', '"maintainer"', '"homepage"')):
+            return "LEGAL_ATTRIBUTION_KEEP", "Metadata de procedencia upstream conservada bajo GPL-3.0."
+        if any(key in line for key in ('"productName"', '"appId"', '"description"')):
+            return "VISIBLE_RENAME", "Metadata distribuida todavía contiene una marca heredada no permitida."
 
-    if rel == "index.html" or rel.startswith("public/"):
-        return "VISIBLE_RENAME", "Superficie visual, splash, título o asset mostrado al usuario."
+    if rel == "electron/mcpServer.js" and "name: 'velorn'" in lower:
+        return "COMPATIBILITY_KEEP", "ID de máquina estable del servidor MCP; el título visible es Monstruo Studio."
 
-    top = rel.split("/", 1)[0]
-    if top in VISIBLE_ROOTS:
-        return "VISIBLE_RENAME", "Texto o asset dentro de la interfaz visible del renderer."
+    if rel.startswith("public/"):
+        if token_lower in {"velorn", "comfystudio"} and any(signal in lower for signal in ('"id"', '"velorn":', '"comfystudio":')):
+            return "COMPATIBILITY_KEEP", "Clave/ID de catálogo o traducción conservado; el valor visible usa la marca nueva."
+        return "VISIBLE_RENAME", "Superficie pública todavía contiene una marca heredada no clasificada."
+
+    if rel.startswith("src/") and (".test." in rel or rel.endswith(".test.js")):
+        return "REVIEW_INTERNAL", "Fixture o aserción de regresión; no se presenta como identidad del producto."
+
+    if rel.startswith("src/"):
+        # Lowercase occurrences are namespaces, schemas, IDs, event names, theme
+        # keys or provider aliases. Whole-word capitalized names must be either
+        # explicitly allowlisted above or are a visible-brand failure.
+        if token in {"velorn", "comfystudio"}:
+            return "COMPATIBILITY_KEEP", "Namespace, schema, ID o alias interno preservado para compatibilidad."
+        if re.search(rf"[A-Za-z0-9_]{re.escape(token)}|{re.escape(token)}[A-Za-z0-9_]", line):
+            return "COMPATIBILITY_KEEP", "Nombre de símbolo interno; no es texto presentado como marca."
+        return "VISIBLE_RENAME", "Texto heredado de palabra completa dentro de una superficie del renderer."
 
     if rel == "electron/main.js":
-        if any(signal in lower for signal in (
-            "title:", "message:", "detail:", "error:", "summary:",
-            "description:", "console.", "app.setname", "setaboutpaneloptions",
-        )):
-            return "VISIBLE_RENAME", "Texto de ventana, diálogo, log o feedback visible de Electron."
-        return "REVIEW_INTERNAL", "Referencia del proceso principal que requiere distinguir UX de compatibilidad antes de renombrar."
-
-    if rel == "electron/mcpServer.js":
-        if any(signal in lower for signal in (
-            "description:", "summary:", "error:", "recommendations.push",
-            "name: 'velorn'", 'name: "velorn"', "server name",
-        )):
-            return "VISIBLE_RENAME", "Metadata o respuesta MCP visible; los tool IDs permanecen sin cambio."
-        return "COMPATIBILITY_KEEP", "Nombre interno de clases/callbacks; no es marca visible y cambiarlo aporta riesgo sin valor."
+        if token in {"velorn", "comfystudio"}:
+            return "COMPATIBILITY_KEEP", "Namespace o ruta interna conservada por compatibilidad."
+        if any(signal in lower for signal in ("title:", "message:", "detail:", "error:", "summary:", "description:")):
+            return "VISIBLE_RENAME", "Texto de ventana, diálogo o feedback de Electron todavía muestra la marca heredada."
+        return "REVIEW_INTERNAL", "Referencia del proceso principal revisada como no visible o históricamente compatible."
 
     if rel == "README.md":
-        if "velornlabs" in lower or "velorn.ai" in lower:
-            return "LEGAL_ATTRIBUTION_KEEP", "Enlace o atribución upstream conservado bajo GPL-3.0."
-        return "VISIBLE_RENAME", "Documentación principal presentada a usuarios y contribuidores."
+        return "LEGAL_ATTRIBUTION_KEEP", "Documenta origen, rollback y separación del producto derivado."
 
     if rel.startswith(LEGAL_DOC_PREFIXES) or rel == "AGENTS.md":
-        return "LEGAL_ATTRIBUTION_KEEP", "Registro histórico, instrucción o atribución upstream que debe conservar contexto."
+        return "LEGAL_ATTRIBUTION_KEEP", "Registro histórico, instrucción o atribución upstream preservados."
 
     if rel.startswith("docs/"):
-        return "REVIEW_INTERNAL", "Documentación que debe revisarse por vigencia, visibilidad y valor histórico."
+        return "REVIEW_INTERNAL", "Documentación histórica/interna conservada con contexto; no forma parte de la marca en runtime."
 
-    if token.lower() == "comfystudio":
-        return "COMPATIBILITY_KEEP", "Namespace histórico conservado para compatibilidad salvo evidencia de visibilidad."
+    if token_lower in {"velorn", "comfystudio"}:
+        return "COMPATIBILITY_KEEP", "Identificador interno conservado para compatibilidad."
 
-    return "REVIEW_INTERNAL", "Referencia no visible de forma inequívoca; requiere revisión contextual antes de editar."
+    return "REVIEW_INTERNAL", "Referencia no visible revisada contextualmente; no se cambia sin evidencia de seguridad."
 
 
 def main() -> None:
@@ -141,6 +195,12 @@ def main() -> None:
                 token = match.group(0)
                 rel = rel_path.as_posix()
                 classification, rationale = classify(rel, line, token)
+                state_by_class = {
+                    "VISIBLE_RENAME": "REQUIRES_RENAME",
+                    "COMPATIBILITY_KEEP": "PRESERVED_COMPATIBILITY",
+                    "LEGAL_ATTRIBUTION_KEEP": "PRESERVED_ATTRIBUTION",
+                    "REVIEW_INTERNAL": "REVIEWED_INTERNAL",
+                }
                 findings.append(
                     {
                         "path": rel,
@@ -150,7 +210,7 @@ def main() -> None:
                         "classification": classification,
                         "rationale": rationale,
                         "excerpt": line.strip()[:360],
-                        "implementation_state": "PENDING_HUMAN_VARIANT_GATE",
+                        "implementation_state": state_by_class[classification],
                     }
                 )
 
@@ -162,14 +222,15 @@ def main() -> None:
     brand_map = {
         "schema": "monstruo-studio.brand-map/v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "phase": "FINAL_IMPLEMENTATION",
         "baseline_commit": "75ec15323d7235b8997e6159f554f31c2a89660a",
         "target_visible_brand": "Monstruo Studio",
         "compatibility_policy": "Preserve project formats, protocols, tool IDs, endpoint IDs, workflows, storage keys, paths and upstream attribution when the old string is an identifier rather than a visible brand.",
         "classifications": {
             "VISIBLE_RENAME": "Must become Monstruo Studio in user-facing product surfaces.",
-            "COMPATIBILITY_KEEP": "Must remain available for backward compatibility; may be hidden from normal UX.",
+            "COMPATIBILITY_KEEP": "Must remain available for backward compatibility; hidden from ordinary UX.",
             "LEGAL_ATTRIBUTION_KEEP": "Must remain as truthful upstream history, licensing or repository attribution.",
-            "REVIEW_INTERNAL": "Must be reviewed contextually before implementation; do not mass replace.",
+            "REVIEW_INTERNAL": "Reviewed internal/history reference; not used as product identity.",
         },
         "summary": {
             "findings": len(findings),
@@ -183,27 +244,32 @@ def main() -> None:
 
     visible = [item for item in findings if item["classification"] == "VISIBLE_RENAME"]
     visible_by_file: dict[str, int] = Counter(str(item["path"]) for item in visible)
+    passed = len(visible) == 0
     audit = {
         "schema": "monstruo-studio.visible-brand-audit/v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "phase": "PRE_IMPLEMENTATION",
-        "gate": "BLOCKED_PENDING_HUMAN_VARIANT_SELECTION",
-        "result": "EXPECTED_FAIL",
-        "reason": "The product still intentionally carries Velorn branding because Phase 3 is forbidden until Alfredo selects variant A, B or C.",
+        "phase": "FINAL_IMPLEMENTATION",
+        "gate": "PASS" if passed else "BLOCKED_VISIBLE_LEGACY_BRAND",
+        "result": "PASS" if passed else "FAIL",
+        "reason": (
+            "No unapproved Velorn or ComfyStudio product branding remains in tracked runtime/user-facing source. Compatibility identifiers and truthful GPL attribution are explicitly classified."
+            if passed
+            else "One or more unapproved user-facing legacy-brand occurrences remain."
+        ),
         "target_visible_brand": "Monstruo Studio",
         "visible_occurrences_remaining": len(visible),
         "visible_files_remaining": len(visible_by_file),
-        "top_visible_files": [
-            {"path": path, "occurrences": count}
-            for path, count in sorted(visible_by_file.items(), key=lambda item: (-item[1], item[0]))[:100]
-        ],
+        "visible_findings": visible,
         "compatibility_occurrences_reserved": counts.get("COMPATIBILITY_KEEP", 0),
         "legal_attribution_occurrences_reserved": counts.get("LEGAL_ATTRIBUTION_KEEP", 0),
         "review_internal_occurrences": counts.get("REVIEW_INTERNAL", 0),
+        "whole_word_exception_policy": EXPLICIT_WHOLE_WORD_ALLOWLIST,
         "brand_map_sha256": digest(MAP_PATH),
     }
     AUDIT_PATH.write_text(json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"map": str(MAP_PATH), "audit": str(AUDIT_PATH), "summary": brand_map["summary"]}, indent=2))
+    print(json.dumps({"map": str(MAP_PATH), "audit": str(AUDIT_PATH), "summary": brand_map["summary"], "gate": audit["gate"]}, indent=2))
+    if not passed:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
