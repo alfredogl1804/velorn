@@ -472,6 +472,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteSetting: (key) => ipcRenderer.invoke('settings:delete', key),
 
   // ============================================
+  // El Monstruo / My Computer media backend
+  // ============================================
+
+  myComputer: {
+    getConnection: () => ipcRenderer.invoke('mycomputer:getConnection'),
+    saveConnection: (connection = {}) => ipcRenderer.invoke('mycomputer:saveConnection', connection),
+    setToken: (token) => ipcRenderer.invoke('mycomputer:setToken', token),
+    clearToken: () => ipcRenderer.invoke('mycomputer:clearToken'),
+    health: () => ipcRenderer.invoke('mycomputer:health'),
+    submit: (request) => ipcRenderer.invoke('mycomputer:submit', request),
+    status: (jobId) => ipcRenderer.invoke('mycomputer:status', jobId),
+    gallery: () => ipcRenderer.invoke('mycomputer:gallery'),
+    ingestAsset: (payload = {}) => ipcRenderer.invoke('mycomputer:ingestAsset', payload),
+    downloadArtifact: (payload = {}) => ipcRenderer.invoke('mycomputer:downloadArtifact', payload),
+  },
+
+  // ============================================
   // MCP Server
   // ============================================
 

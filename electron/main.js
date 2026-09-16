@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, screen, session } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net, shell, screen, session, safeStorage } = require('electron')
 const crypto = require('crypto')
 const path = require('path')
 const os = require('os')
@@ -59,7 +59,7 @@ const {
 } = require('./mainWindowBounds')
 const { createRifeInterpolationCache } = require('./rifeInterpolation')
 const { resolveRifeRuntime } = require('./rifeRuntime')
-
+const { registerMyComputerBridgeHandlers } = require('./myComputerBridge')
 const isDev = !app.isPackaged
 
 // App icon (build/icon.png) – used for window and taskbar/dock
@@ -3326,6 +3326,16 @@ async function writeSettingsRaw(mutator) {
   settingsWriteQueue = writeOperation.then(() => {}, () => {})
   return writeOperation
 }
+
+registerMyComputerBridgeHandlers({
+  ipcMain,
+  safeStorage,
+  readSettingsRaw,
+  writeSettingsRaw,
+  getTrustedWebContents: () => (
+    mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents : null
+  ),
+})
 
 async function refreshSettingsDependentCaches() {
   try {

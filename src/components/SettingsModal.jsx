@@ -3,7 +3,7 @@ import {
   X, Server, FolderOpen, Palette, Monitor, Save,
   HardDrive, Film, Keyboard, Wrench, Power,
   KeyRound, CheckCircle2, ExternalLink, Loader2, RefreshCcw,
-  Volume2, Play, Bot, Copy, MessageSquare, Globe2,
+  Volume2, Play, Bot, Copy, MessageSquare, Globe2, ShieldCheck,
 } from 'lucide-react'
 import useProjectStore, { RESOLUTION_PRESETS, FPS_PRESETS } from '../stores/projectStore'
 import useTimelineStore from '../stores/timelineStore'
@@ -14,6 +14,7 @@ import WorkflowSetupSection from './WorkflowSetupSection'
 import FeedbackSection from './FeedbackSection'
 import ComfyLauncherSettingsSection from './ComfyLauncherSettingsSection'
 import ComfyLauncherLogViewer from './ComfyLauncherLogViewer'
+import MyComputerConnectionSection from './MyComputerConnectionSection'
 import ApiKeyDialog from './ApiKeyDialog'
 import {
   COMFY_PARTNER_KEY_CHANGED_EVENT,
@@ -99,6 +100,12 @@ const SETTINGS_SECTIONS = [
     title: 'ComfyUI Connection',
     icon: Server,
     description: 'Configure the local ComfyUI endpoint, partner API key, and advanced tab visibility.',
+  },
+  {
+    id: 'mycomputer',
+    title: 'My Computer',
+    icon: ShieldCheck,
+    description: 'Connect Velorn to El Monstruo’s sovereign media control plane.',
   },
   {
     id: 'agents',
@@ -1156,6 +1163,9 @@ function GeneralTab({ initialSection = null }) {
           </div>
         </div>
       )
+      break
+    case 'mycomputer':
+      activeSectionContent = <MyComputerConnectionSection />
       break
     case 'feedback':
       activeSectionContent = <FeedbackSection />
