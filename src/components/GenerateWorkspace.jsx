@@ -44,6 +44,11 @@ import { comfyui, validateCustomKeyframeWorkflow, validateCustomVideoWorkflow } 
 import { convertCustomLibraryWorkflowToApi } from '../services/customWorkflowLibrary'
 import { markPromptHandledByApp } from '../services/comfyPromptGuard'
 import {
+  isGenerationRecoveryPending,
+  planGenerationRetry,
+  requeueGenerationJob,
+} from '../services/generationRecovery'
+import {
   GENERATION_COMPLETION_SOUND_CHANGED_EVENT,
   getGenerationCompletionSoundSettings,
   playGenerationCompletionSound,
@@ -503,7 +508,7 @@ function buildGenerationErrorClipboardText({
   generationMode = '',
 } = {}) {
   const lines = [
-    'Velorn error report',
+    'Monstruo Studio error report',
     `Timestamp: ${new Date().toISOString()}`,
   ]
 
@@ -720,34 +725,37 @@ function sanitizeGenerationJobForStorage(job) {
 }
 
 function normalizePersistedGenerationJob(job) {
-  if (!job?.id || !RECOVERABLE_JOB_STATUSES.has(job.status)) return null
-  const originProject = sanitizeProjectOriginForStorage(job.originProject)
-  const hasPromptId = Boolean(job.promptId)
-  const status = job.status === 'paused'
+  if (!job?.id) return null
+  const retryPlan = job.status === 'error' ? planGenerationRetry(job) : null
+  if (!RECOVERABLE_JOB_STATUSES.has(job.status) && !retryPlan) return null
+  const recoverableJob = retryPlan ? requeueGenerationJob(job, retryPlan) : job
+  const originProject = sanitizeProjectOriginForStorage(recoverableJob.originProject)
+  const hasPromptId = Boolean(recoverableJob.promptId)
+  const status = recoverableJob.status === 'paused'
     ? 'paused'
     : 'queued'
-  const assetFields = job.sourceAssets?.assetFields && typeof job.sourceAssets.assetFields === 'object'
+  const assetFields = recoverableJob.sourceAssets?.assetFields && typeof recoverableJob.sourceAssets.assetFields === 'object'
     ? Object.fromEntries(
-      Object.entries(job.sourceAssets.assetFields)
+      Object.entries(recoverableJob.sourceAssets.assetFields)
         .map(([key, asset]) => [key, sanitizeAssetSnapshotForStorage(asset)])
         .filter(([, asset]) => Boolean(asset))
     )
     : null
 
   return {
-    ...job,
+    ...recoverableJob,
     originProject,
-    sourceAssets: job.sourceAssets && typeof job.sourceAssets === 'object'
+    sourceAssets: recoverableJob.sourceAssets && typeof recoverableJob.sourceAssets === 'object'
       ? {
-        input: sanitizeAssetSnapshotForStorage(job.sourceAssets.input),
-        reference1: sanitizeAssetSnapshotForStorage(job.sourceAssets.reference1),
-        reference2: sanitizeAssetSnapshotForStorage(job.sourceAssets.reference2),
-        audio: sanitizeAssetSnapshotForStorage(job.sourceAssets.audio),
+        input: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.input),
+        reference1: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.reference1),
+        reference2: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.reference2),
+        audio: sanitizeAssetSnapshotForStorage(recoverableJob.sourceAssets.audio),
         assetFields,
       }
       : null,
     status,
-    progress: hasPromptId ? Math.max(Number(job.progress) || 0, 45) : 0,
+    progress: hasPromptId ? Math.max(Number(recoverableJob.progress) || 0, 45) : 0,
     error: null,
     node: null,
     restoredFromLedger: true,
@@ -2194,7 +2202,7 @@ function buildMusicVideoCoveragePlanPrompt(coveragePlan) {
     'B-roll, environmental, and detail coverage must tile as adjacent video clips: each shot has a Start at, and its Length should end exactly at the next shot Start at. The final shot must end at the full audio duration.',
     'B-roll shot starts must NOT be constrained to lyric/SRT offsets. Use lyric timings only as emotional/story landmarks, then create continuous b-roll coverage between and beyond those lyric moments.',
     'Do not write one long take for any pass. Break every pass into 2-8 second clips aligned to the song timing.',
-    'Use the exact Coverage type and Coverage label fields shown below so Velorn can group the shots later.',
+    'Use the exact Coverage type and Coverage label fields shown below so Monstruo Studio can group the shots later.',
   ]
   plan.sections.forEach((section, index) => {
     lines.push(`  Coverage ${index + 1}: ${section.label}`)
@@ -4244,7 +4252,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   useEffect(() => {
     try {
       const jobsToPersist = generationQueue
-        .filter((job) => RECOVERABLE_JOB_STATUSES.has(job.status))
+        .filter((job) => RECOVERABLE_JOB_STATUSES.has(job.status) || isGenerationRecoveryPending(job))
         .map(sanitizeGenerationJobForStorage)
         .filter(Boolean)
         .slice(-PERSISTED_GENERATION_QUEUE_LIMIT)
@@ -4968,7 +4976,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   const handleImportYoloMusicAudio = useCallback(async () => {
     if (yoloMusicAudioImporting) return
     if (!currentProjectHandle) {
-      setFormError('Open or create a project first so Velorn can import the song file.')
+      setFormError('Open or create a project first so Monstruo Studio can import the song file.')
       addComfyLog('error', 'Song audio import requires an open project folder.')
       return
     }
@@ -5035,7 +5043,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
   const handleImportYoloMusicCastImage = useCallback(async () => {
     if (yoloMusicCastImageImporting) return null
     if (!currentProjectHandle) {
-      setFormError('Open or create a project first so Velorn can import the reference image.')
+      setFormError('Open or create a project first so Monstruo Studio can import the reference image.')
       addComfyLog('error', 'Cast reference import requires an open project folder.')
       return null
     }
@@ -5143,7 +5151,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       '2': {
         class_type: 'PrimitiveStringMultiline',
         inputs: {
-          value: 'Velorn will inject the shot keyframe prompt here.',
+          value: 'Monstruo Studio will inject the shot keyframe prompt here.',
         },
         _meta: {
           title: 'VELORN_PROMPT',
@@ -5186,7 +5194,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           crop: 'center',
         },
         _meta: {
-          title: 'Velorn Output Resize',
+          title: 'Monstruo Studio Output Resize',
         },
       },
       '7': {
@@ -5202,7 +5210,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     }
     const validation = validateCustomKeyframeWorkflow(starter)
     return {
-      name: 'Velorn custom keyframe starter',
+      name: 'Monstruo Studio custom keyframe starter',
       workflow: starter,
       jsonText: JSON.stringify(starter, null, 2),
       validation,
@@ -5223,7 +5231,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       '2': {
         class_type: 'PrimitiveStringMultiline',
         inputs: {
-          value: 'Velorn will inject the ad shot keyframe prompt here.',
+          value: 'Monstruo Studio will inject the ad shot keyframe prompt here.',
         },
         _meta: {
           title: 'VELORN_PROMPT',
@@ -5266,7 +5274,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           crop: 'center',
         },
         _meta: {
-          title: 'Velorn Output Resize',
+          title: 'Monstruo Studio Output Resize',
         },
       },
       '7': {
@@ -5282,7 +5290,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     }
     const validation = validateCustomKeyframeWorkflow(starter, { requireInputImage: false })
     return {
-      name: 'Velorn custom ad keyframe starter',
+      name: 'Monstruo Studio custom ad keyframe starter',
       workflow: starter,
       jsonText: JSON.stringify(starter, null, 2),
       validation,
@@ -5303,7 +5311,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       '2': {
         class_type: 'PrimitiveStringMultiline',
         inputs: {
-          value: 'Velorn will inject the shot video prompt here.',
+          value: 'Monstruo Studio will inject the shot video prompt here.',
         },
         _meta: {
           title: 'VELORN_PROMPT',
@@ -5373,7 +5381,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           crop: 'center',
         },
         _meta: {
-          title: 'Velorn Output Resize',
+          title: 'Monstruo Studio Output Resize',
         },
       },
       '10': {
@@ -5389,7 +5397,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     }
     const validation = validateCustomVideoWorkflow(starter)
     return {
-      name: 'Velorn custom video starter',
+      name: 'Monstruo Studio custom video starter',
       workflow: starter,
       jsonText: JSON.stringify(starter, null, 2),
       validation,
@@ -5462,7 +5470,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       validateOptionalEndpoints: false,
     })
     return {
-      name: 'Velorn custom image starter',
+      name: 'Monstruo Studio custom image starter',
       workflow: starter,
       jsonText: JSON.stringify(starter, null, 2),
       validation,
@@ -5483,7 +5491,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       '2': {
         class_type: 'PrimitiveStringMultiline',
         inputs: {
-          value: 'Velorn will inject the video prompt here.',
+          value: 'Monstruo Studio will inject the video prompt here.',
         },
         _meta: {
           title: 'VELORN_PROMPT',
@@ -5553,7 +5561,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           crop: 'center',
         },
         _meta: {
-          title: 'Velorn Output Resize',
+          title: 'Monstruo Studio Output Resize',
         },
       },
       '10': {
@@ -5569,7 +5577,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     }
     const validation = validateCustomVideoWorkflow(starter, { requireInputImage: false })
     return {
-      name: 'Velorn custom video starter',
+      name: 'Monstruo Studio custom video starter',
       workflow: starter,
       jsonText: JSON.stringify(starter, null, 2),
       validation,
@@ -6039,7 +6047,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       const unavailable = normalizeComfyStudioBridgeStatus({
         state: 'unavailable',
         installed: false,
-        message: 'Velorn Bridge is only available in the desktop app.',
+        message: 'Monstruo Studio Bridge is only available in the desktop app.',
       })
       setYoloMusicCustomKeyframeBridgeStatus(unavailable)
       if (!silent) addComfyLog('warning', unavailable.message)
@@ -6059,7 +6067,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       const next = normalizeComfyStudioBridgeStatus({
         state: 'unavailable',
         installed: false,
-        error: error?.message || 'Could not check the Velorn Bridge.',
+        error: error?.message || 'Could not check the Monstruo Studio Bridge.',
       })
       setYoloMusicCustomKeyframeBridgeStatus(next)
       if (!silent) addComfyLog('error', next.message)
@@ -7887,7 +7895,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       const unavailable = normalizeComfyStudioBridgeStatus({
         state: 'unavailable',
         installed: false,
-        message: 'Velorn Bridge is only available in the desktop app.',
+        message: 'Monstruo Studio Bridge is only available in the desktop app.',
       })
       setYoloMusicCustomKeyframeBridgeStatus(unavailable)
       addComfyLog('warning', unavailable.message)
@@ -7901,7 +7909,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       setYoloMusicCustomKeyframeBridgeStatus(status)
 
       if (!result?.success) {
-        addComfyLog('error', status.message || status.error || 'Could not install the Velorn Bridge.')
+        addComfyLog('error', status.message || status.error || 'Could not install the Monstruo Studio Bridge.')
         return status
       }
 
@@ -7910,7 +7918,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
 
       const restartNow = await requestConfirm({
         title: 'Restart ComfyUI now?',
-        message: 'The Velorn Bridge is installed. Restart ComfyUI now to load the Send to Velorn button.\n\nIf this ComfyUI session was started outside Velorn, restart it manually and then re-check the bridge.',
+        message: 'The Monstruo Studio Bridge is installed. Restart ComfyUI now to load the Send to Monstruo Studio button.\n\nIf this ComfyUI session was started outside Monstruo Studio, restart it manually and then re-check the bridge.',
         confirmLabel: 'Restart ComfyUI',
         cancelLabel: 'Later',
         tone: 'primary',
@@ -7953,7 +7961,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       const next = normalizeComfyStudioBridgeStatus({
         state: 'unavailable',
         installed: false,
-        error: error?.message || 'Could not install the Velorn Bridge.',
+        error: error?.message || 'Could not install the Monstruo Studio Bridge.',
       })
       setYoloMusicCustomKeyframeBridgeStatus(next)
       addComfyLog('error', next.message)
@@ -11136,7 +11144,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         if (!Number.isFinite(Number(queuedCount)) || Number(queuedCount) <= 0) {
           respond({
             success: false,
-            error: 'Velorn did not queue a keyframe job. Inspect the shot again for its current state.',
+            error: 'Monstruo Studio did not queue a keyframe job. Inspect the shot again for its current state.',
             report,
           })
           return
@@ -13295,7 +13303,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               })) || 0
             }
           }
-          if (queuedCount <= 0) throw new Error(`Velorn did not queue any Music Video ${stage} jobs.`)
+          if (queuedCount <= 0) throw new Error(`Monstruo Studio did not queue any Music Video ${stage} jobs.`)
           respond({
             success: true,
             previewOnly: false,
@@ -13513,7 +13521,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
         if (!Number.isFinite(Number(queuedCount)) || Number(queuedCount) <= 0) {
           respond({
             success: false,
-            error: 'Velorn did not queue a Step 5 video job. Inspect the shot again for its current state.',
+            error: 'Monstruo Studio did not queue a Step 5 video job. Inspect the shot again for its current state.',
             report,
           })
           return
@@ -14701,7 +14709,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           const manifest = getMcpPromptWorkflowManifest(id)
           const label = getWorkflowDisplayLabel(id) || id
           if (!manifest) {
-            respond({ success: false, error: `Unknown Velorn workflow: ${id}`, status })
+            respond({ success: false, error: `Unknown Monstruo Studio workflow: ${id}`, status })
             return
           }
           if (manifest.runnable === false) {
@@ -14720,7 +14728,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
               const jobAssetFields = normalizeMcpPromptAssetFieldIds(job)
               const inputAssetId = String(jobAssetFields.image || jobAssetFields.inputImage || '').trim()
               if (!inputAssetId) {
-                respond({ success: false, error: `Workflow ${label} needs an input image. Provide jobs[].assetFieldIds.image with a Velorn image asset id.`, status })
+                respond({ success: false, error: `Workflow ${label} needs an input image. Provide jobs[].assetFieldIds.image with a Monstruo Studio image asset id.`, status })
                 return
               }
               const inputAsset = assetById.get(inputAssetId)
@@ -15999,7 +16007,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
           ? 'image'
           : importedJobEntry.manifest?.outputType === 'audio'
             ? 'audio'
-          : 'video'}/velorn_${outputToken}`
+          : 'video'}/monstruo_studio_${outputToken}`
       ) : (
         isSingleVideoWorkflowId(job.workflowId) ||
         job.workflowId === 'ltx23-t2v' ||
@@ -16030,10 +16038,10 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             job.workflowId === CUSTOM_AD_KEYFRAME_WORKFLOW_ID ||
             job.workflowId === CUSTOM_MUSIC_KEYFRAME_WORKFLOW_ID
           )
-            ? `image/velorn_${outputToken}`
+            ? `image/monstruo_studio_${outputToken}`
             : (
               job.workflowId === 'sonilo-v2m' || job.workflowId === ELEVENLABS_TTS_WORKFLOW_ID
-              ? `audio/velorn_${outputToken}`
+              ? `audio/monstruo_studio_${outputToken}`
                 : ''
             )
       )
@@ -16332,7 +16340,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             frames: Math.round(job.duration * job.fps) + 1,
             fps: job.fps,
             seed: job.seed,
-            filenamePrefix: outputPrefix || 'video/Velorn_wan',
+            filenamePrefix: outputPrefix || 'video/MonstruoStudio_wan',
             qualityPreset: job.wanQualityPreset || 'balanced',
           })
           break
@@ -16547,7 +16555,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             width: job.resolution?.width,
             height: job.resolution?.height,
             referenceImages: referenceFilenames,
-            filenamePrefix: outputPrefix || 'image/Velorn_edit',
+            filenamePrefix: outputPrefix || 'image/MonstruoStudio_edit',
           })
           break
         case CUSTOM_MUSIC_KEYFRAME_WORKFLOW_ID:
@@ -16822,10 +16830,23 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
     if (processingRef.current) return
     if (queuePausedRef.current) return
     if (!isConnected) return
-    const nextJob = queueRef.current.find((job) => (
-      job.status === 'queued' && !startedJobIdsRef.current.has(job.id)
-    ))
-    if (!nextJob) return
+    const nowMs = Date.now()
+    const nextJob = queueRef.current.find((job) => {
+      if (job.status !== 'queued' || startedJobIdsRef.current.has(job.id)) return false
+      const nextAttemptAt = Date.parse(String(job.recoveryNextAttemptAt || ''))
+      return !Number.isFinite(nextAttemptAt) || nextAttemptAt <= nowMs
+    })
+    if (!nextJob) {
+      const nextWakeAt = queueRef.current
+        .filter((job) => job.status === 'queued' && !startedJobIdsRef.current.has(job.id))
+        .map((job) => Date.parse(String(job.recoveryNextAttemptAt || '')))
+        .filter((value) => Number.isFinite(value) && value > nowMs)
+        .sort((left, right) => left - right)[0]
+      if (Number.isFinite(nextWakeAt)) {
+        setTimeout(() => processQueue(), Math.max(100, nextWakeAt - nowMs))
+      }
+      return
+    }
 
     startedJobIdsRef.current.add(nextJob.id)
     processingRef.current = true
@@ -16849,6 +16870,21 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
       })
     }
     const didFail = finishedJob?.status === 'error' || finishedJob?.status === 'queued'
+    const retryPlan = planGenerationRetry(finishedJob)
+    if (retryPlan) {
+      startedJobIdsRef.current.delete(nextJob.id)
+      setGenerationQueue((previous) => previous.map((job) => (
+        job.id === nextJob.id ? requeueGenerationJob(job, retryPlan) : job
+      )))
+      consecutiveRapidFailsRef.current = 0
+      addComfyLog(
+        'status',
+        `Recovery scheduled for ${finishedJob.workflowLabel || finishedJob.workflowId || finishedJob.id} `
+          + `(attempt ${retryPlan.retryCount}, ${Math.ceil(retryPlan.delayMs / 1000)}s backoff)`
+      )
+      setTimeout(() => processQueue(), retryPlan.delayMs)
+      return
+    }
 
     if (didFail && jobElapsed < RAPID_FAIL_THRESHOLD_MS) {
       consecutiveRapidFailsRef.current += 1
@@ -17065,7 +17101,7 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
             {!launcherIsBooting && !launcherWaitingForExternal && launcherCanAutoStart && (
               <>
                 <span className="font-semibold">ComfyUI is offline.</span>{' '}
-                <span className="text-sky-200/85">Hit Start (or just queue a job) and Velorn will boot it for you.</span>
+                <span className="text-sky-200/85">Hit Start (or just queue a job) and Monstruo Studio will boot it for you.</span>
               </>
             )}
           </div>
@@ -17950,8 +17986,8 @@ function GenerateWorkspace({ onOpenWorkflowSetup = null }) {
                               <div className="text-[10px] leading-5 text-sf-text-secondary">
                                 <div className="font-semibold text-sf-text-primary">Lyrics source</div>
                                 {yoloMusicAlignProvidedLyrics
-                                  ? 'Paste plain lyrics below. Velorn listens to the selected audio for timing, then writes your lyrics as SRT.'
-                                  : 'Velorn listens to the selected audio and writes timed SRT output.'}
+                                  ? 'Paste plain lyrics below. Monstruo Studio listens to the selected audio for timing, then writes your lyrics as SRT.'
+                                  : 'Monstruo Studio listens to the selected audio and writes timed SRT output.'}
                               </div>
                               <div className="inline-flex rounded-lg border border-sf-dark-600 bg-sf-dark-950 p-1">
                                 <button

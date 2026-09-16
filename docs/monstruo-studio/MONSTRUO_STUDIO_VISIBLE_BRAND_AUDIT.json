@@ -1,0 +1,31 @@
+{
+  "schema": "monstruo-studio.visible-brand-audit/v1",
+  "generated_at": "2026-09-16T00:20:58.779471+00:00",
+  "phase": "FINAL_IMPLEMENTATION",
+  "gate": "PASS",
+  "result": "PASS",
+  "reason": "No unapproved Velorn or ComfyStudio product branding remains in tracked runtime/user-facing source. Compatibility identifiers and truthful GPL attribution are explicitly classified.",
+  "target_visible_brand": "Monstruo Studio",
+  "visible_occurrences_remaining": 0,
+  "visible_files_remaining": 0,
+  "visible_findings": [],
+  "compatibility_occurrences_reserved": 1038,
+  "legal_attribution_occurrences_reserved": 327,
+  "review_internal_occurrences": 269,
+  "whole_word_exception_policy": {
+    "electron/comfyLauncher.js": {
+      "'User-Agent': 'Velorn-Launcher/1.0'": "COMPATIBILITY_KEEP"
+    },
+    "electron/comfyui-injected/comfystudio_bridge/web/js/comfystudio_bridge.js": {
+      "name: \"Velorn.Bridge\"": "COMPATIBILITY_KEEP"
+    },
+    "src/services/comfyui.js": {
+      "'Velorn Output Resize'": "COMPATIBILITY_KEEP",
+      "'ComfyStudio Output Resize'": "COMPATIBILITY_KEEP"
+    },
+    "src/components/SettingsModal.jsx": {
+      "derived from the Velorn open-source project": "LEGAL_ATTRIBUTION_KEEP"
+    }
+  },
+  "brand_map_sha256": "b7a76fd3fb0c635c9a2187c836b49a36de4345f61f5a8ef1794fb9ad6dcd3e75"
+}

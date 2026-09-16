@@ -88,7 +88,7 @@ function buildBridgeCalibrationProfile(descriptor, profile) {
     uncertainty: {
       scope: 'Face-only reversible identity source; full-frame background/halo preservation is not claimed.',
       bindingStatus: 'Descriptor is bridge-compatible; mutating execution still requires a configured specialist adapter and scoped Kernel grant.',
-      choreographyMapping: 'The neutral bridge exposes the technical pose_end_percent range; the native Velorn control remains the authoritative piecewise mapping.',
+      choreographyMapping: 'The neutral bridge exposes the technical pose_end_percent range; the native Monstruo Studio control remains the authoritative piecewise mapping.',
     },
     provenance: [{
       evidence_id: descriptor.evidence?.artifact || descriptor.id,

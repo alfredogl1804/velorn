@@ -296,7 +296,7 @@ export default function TemplateDetail({
             {importState?.busy ? (importState.message || 'Importing workflow…') : 'Import to Generate'}
           </button>
           <div className="mt-1.5 text-center text-[10px] text-sf-text-muted">
-            Uses Velorn’s native importer and dependency setup; the official graph remains editable and is not copied into a parallel workflow.
+            Uses Monstruo Studio’s native importer and dependency setup; the official graph remains editable and is not copied into a parallel workflow.
           </div>
           {importState?.error && (
             <div className="mt-1.5 text-center text-[10px] text-sf-error">{importState.error}</div>

@@ -48,14 +48,19 @@ export const CUSTOM_VIDEO_ENDPOINTS = Object.freeze({
   inputAudio: 'VELORN_AUDIO',
   outputVideo: 'VELORN_OUTPUT_VIDEO',
 })
-const VELORN_OUTPUT_RESIZE_TITLE = 'Velorn Output Resize'
+const MONSTRUO_STUDIO_OUTPUT_RESIZE_TITLE = 'Monstruo Studio Output Resize'
+const LEGACY_VELORN_OUTPUT_RESIZE_TITLE = 'Velorn Output Resize'
 const LEGACY_COMFYSTUDIO_OUTPUT_RESIZE_TITLE = 'ComfyStudio Output Resize'
-const OUTPUT_RESIZE_TITLES = [VELORN_OUTPUT_RESIZE_TITLE, LEGACY_COMFYSTUDIO_OUTPUT_RESIZE_TITLE]
+const OUTPUT_RESIZE_TITLES = [
+  MONSTRUO_STUDIO_OUTPUT_RESIZE_TITLE,
+  LEGACY_VELORN_OUTPUT_RESIZE_TITLE,
+  LEGACY_COMFYSTUDIO_OUTPUT_RESIZE_TITLE,
+]
 
 // Users commonly organize ComfyUI model folders into subfolders (e.g.
 // models/diffusion_models/WAN/wan2.2_i2v.safetensors); ComfyUI then lists the
 // file to loader nodes as the relative path "WAN/wan2.2_i2v.safetensors".
-// Velorn's built-in workflows reference bare filenames, so an unmatched
+// Monstruo Studio's built-in workflows reference bare filenames, so an unmatched
 // model input is resolved against the node's actual choice list by basename
 // before queueing (see resolveSubfolderModelPaths).
 const MODEL_FILE_INPUT_RE = /\.(safetensors|sft|ckpt|pt|pth|bin|gguf|onnx)$/i
@@ -1462,7 +1467,7 @@ export function modifyMaskWorkflow(workflow, options = {}) {
   const {
     inputFilename = '',       // The uploaded filename in ComfyUI
     textPrompt = '',          // What to segment (e.g., "person on the left")
-    outputPrefix = 'VelornMask',  // Output filename prefix
+    outputPrefix = 'MonstruoStudioMask',  // Output filename prefix
     scoreThreshold = 0.04,    // Detection sensitivity (lower = more sensitive)
     frameIdx = 0,             // Which frame to use for initial detection
   } = options;
@@ -1524,7 +1529,7 @@ export function modifyWAN22Workflow(workflow, options = {}) {
     frames = 81,
     fps = 16,
     seed = Math.floor(Math.random() * 1000000000000),
-    filenamePrefix = 'video/Velorn_wan',
+    filenamePrefix = 'video/MonstruoStudio_wan',
     qualityPreset = 'balanced', // balanced | face-lock
   } = options
 
@@ -1922,11 +1927,11 @@ export function modifyMultipleAnglesWorkflow(workflow, options = {}) {
     }
   }
 
-  // Update save prefixes to Velorn
+  // Update save prefixes to Monstruo Studio
   const saveNodes = { '31': 'close_up', '34': 'wide_shot', '36': '45_right', '38': '90_right', '47': '90_left', '41': 'aerial_view', '43': 'low_angle', '45': '45_left' }
   for (const [nodeId, suffix] of Object.entries(saveNodes)) {
     if (modified[nodeId]) {
-      modified[nodeId].inputs.filename_prefix = `Velorn-${suffix}`
+      modified[nodeId].inputs.filename_prefix = `Monstruo Studio-${suffix}`
     }
   }
 
@@ -2125,7 +2130,7 @@ export function modifyQwenImageEdit2509Workflow(workflow, options = {}) {
     }
     // Save Image: set prefix
     if (cls === 'SaveImage' && node.inputs && 'filename_prefix' in node.inputs) {
-      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'image/Velorn_edit'
+      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'image/MonstruoStudio_edit'
     }
   }
 
@@ -2214,10 +2219,10 @@ export function modifyLocalApiWorkflow(workflow, options = {}) {
     }
 
     if (cls === 'SaveImage' && 'filename_prefix' in node.inputs) {
-      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'image/velorn_local'
+      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'image/monstruo_studio_local'
     }
     if (cls === 'SaveVideo' && 'filename_prefix' in node.inputs) {
-      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'video/velorn_local'
+      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'video/monstruo_studio_local'
     }
 
     if (cls === 'CLIPTextEncode' && typeof node.inputs.text === 'string') {
@@ -2791,7 +2796,7 @@ export function modifyMinimaxH3ReferenceWorkflow(workflow, options = {}) {
     height = 1440,
     duration = 5,
     seed = Math.floor(Math.random() * 1000000000000),
-    filenamePrefix = 'video/velorn_minimax_h3',
+    filenamePrefix = 'video/monstruo_studio_minimax_h3',
     assetFilenames = {},
   } = options
 
@@ -2823,7 +2828,7 @@ export function modifyMinimaxH3ReferenceWorkflow(workflow, options = {}) {
     }
 
     if (node.class_type === 'SaveVideo' && 'filename_prefix' in node.inputs) {
-      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'video/velorn_minimax_h3'
+      node.inputs.filename_prefix = filenamePrefix || node.inputs.filename_prefix || 'video/monstruo_studio_minimax_h3'
     }
   }
 
@@ -3481,7 +3486,7 @@ export function modifyMusicWorkflow(workflow, options = {}) {
   }
   // Output prefix (node 107)
   if (modified['107']) {
-    modified['107'].inputs.filename_prefix = 'audio/Velorn'
+    modified['107'].inputs.filename_prefix = 'audio/Monstruo Studio'
   }
 
   return modified

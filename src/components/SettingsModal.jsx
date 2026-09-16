@@ -3,7 +3,7 @@ import {
   X, Server, FolderOpen, Palette, Monitor, Save,
   HardDrive, Film, Keyboard, Wrench, Power,
   KeyRound, CheckCircle2, ExternalLink, Loader2, RefreshCcw,
-  Volume2, Play, Bot, Copy, MessageSquare, Globe2,
+  Volume2, Play, Bot, Copy, MessageSquare, Globe2, Info,
 } from 'lucide-react'
 import useProjectStore, { RESOLUTION_PRESETS, FPS_PRESETS } from '../stores/projectStore'
 import useTimelineStore from '../stores/timelineStore'
@@ -64,11 +64,12 @@ import {
   setShowDiscoverTab,
 } from '../services/discoverTabVisibilitySettings.mjs'
 import { useI18n } from '../i18n/I18nContext'
+import packageJson from '../../package.json'
 
 const AUTO_IMPORT_KEY = 'comfystudio-auto-import-comfy-outputs'
 const OUTPUT_DIRECTORY_SETTING_KEY = 'outputDirectory'
 const WORKFLOWS_DIRECTORY_SETTING_KEY = 'workflowsDirectory'
-const OUTPUT_DIRECTORY_PLACEHOLDER = 'C:\\Users\\...\\Velorn\\outputs'
+const OUTPUT_DIRECTORY_PLACEHOLDER = 'C:\\Users\\...\\Monstruo Studio\\outputs'
 const WORKFLOWS_DIRECTORY_PLACEHOLDER = 'C:\\Users\\...\\ComfyUI\\workflow_API'
 const HOTKEY_CATEGORY_KEY = {
   'Timeline selection': 'selection',
@@ -110,7 +111,7 @@ const SETTINGS_SECTIONS = [
     id: 'launcher',
     title: 'ComfyUI Launcher',
     icon: Power,
-    description: 'Let Velorn start, stop, and restart your local ComfyUI process.',
+    description: 'Let Monstruo Studio start, stop, and restart your local ComfyUI process.',
   },
   {
     id: 'paths',
@@ -128,7 +129,7 @@ const SETTINGS_SECTIONS = [
     id: 'language',
     title: 'Language',
     icon: Globe2,
-    description: 'Choose the language used in the Velorn interface.',
+    description: 'Choose the language used in the Monstruo Studio interface.',
   },
   {
     id: 'appearance',
@@ -159,6 +160,12 @@ const SETTINGS_SECTIONS = [
     title: 'Send Feedback',
     icon: MessageSquare,
     description: 'Report a bug or share an idea — it lands directly with the team.',
+  },
+  {
+    id: 'about',
+    title: 'About Monstruo Studio',
+    icon: Info,
+    description: 'Version, product identity, licensing, and upstream provenance.',
   },
 ]
 
@@ -655,7 +662,7 @@ function GeneralTab({ initialSection = null }) {
       setHardwareExportFfmpegMessage(
         result.status?.source === 'environment'
           ? 'Saved path cleared. VELORN_FFMPEG_PATH remains active.'
-          : 'Velorn will use its bundled FFmpeg for hardware checks and software fallback.'
+          : 'Monstruo Studio will use its bundled FFmpeg for hardware checks and software fallback.'
       )
     } catch (error) {
       setHardwareExportFfmpegMessage(error?.message || 'Could not restore the bundled FFmpeg setting.')
@@ -1162,14 +1169,14 @@ function GeneralTab({ initialSection = null }) {
       break
     case 'agents': {
       const mcpUrl = mcpStatus?.url || 'http://127.0.0.1:19790/mcp'
-      const codexCommand = `codex mcp add velorn --url ${mcpUrl}`
-      const claudeCommand = `claude mcp add --transport http velorn ${mcpUrl}`
+      const codexCommand = `codex mcp add monstruo-studio --url ${mcpUrl}`
+      const claudeCommand = `claude mcp add --transport http monstruo-studio ${mcpUrl}`
       activeSectionContent = (
         <div className="space-y-4">
           <div className="rounded-lg border border-sf-dark-700 bg-sf-dark-900/60 px-3 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-medium text-sf-text-primary">Velorn MCP server</div>
+                <div className="text-sm font-medium text-sf-text-primary">Monstruo Studio MCP server</div>
                 <p className="mt-1 text-[11px] text-sf-text-muted">
                   {t('settings.agents.serverDescription')}
                 </p>
@@ -1312,7 +1319,7 @@ function GeneralTab({ initialSection = null }) {
               <div>
                 <div className="text-sm font-medium text-sf-text-primary">Hardware export FFmpeg</div>
                 <p className="mt-1 text-[10px] text-sf-text-muted">
-                  Advanced: choose an FFmpeg build with NVENC on Linux. It is used only for final H.264/H.265 hardware video encoding; Velorn keeps its bundled FFmpeg for media tools and as the safe CPU fallback.
+                  Advanced: choose an FFmpeg build with NVENC on Linux. It is used only for final H.264/H.265 hardware video encoding; Monstruo Studio keeps its bundled FFmpeg for media tools and as the safe CPU fallback.
                 </p>
               </div>
               <span className="flex-shrink-0 rounded border border-sf-dark-600 bg-sf-dark-800 px-2 py-1 text-[10px] text-sf-text-secondary">
@@ -1389,7 +1396,7 @@ function GeneralTab({ initialSection = null }) {
 
             {hardwareExportFfmpegStatus?.environmentPath && (
               <p className="mt-2 text-[10px] text-yellow-300">
-                VELORN_FFMPEG_PATH is active and takes priority over the saved path until Velorn is restarted without it.
+                VELORN_FFMPEG_PATH is active and takes priority over the saved path until Monstruo Studio is restarted without it.
               </p>
             )}
             {hardwareExportFfmpegStatus?.warning && (
@@ -1766,6 +1773,38 @@ function GeneralTab({ initialSection = null }) {
               ))}
             </select>
           </div>
+        </div>
+      )
+      break
+    case 'about':
+      activeSectionContent = (
+        <div className="space-y-5">
+          <div className="flex items-center gap-5 rounded-2xl border border-sf-dark-700 bg-black p-5">
+            <img src="./monstruo-studio-app-icon.svg" alt="" className="h-24 w-24 flex-shrink-0" />
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-sf-accent">El Monstruo</div>
+              <h4 className="mt-2 text-2xl font-bold tracking-tight text-sf-text-primary">Monstruo Studio</h4>
+              <p className="mt-1 text-sm text-sf-text-secondary">Edición y creación multimedia asistida por IA</p>
+              <p className="mt-3 font-mono text-[11px] text-sf-text-muted">Version {packageJson.version}</p>
+            </div>
+          </div>
+          <div className="rounded-xl border border-sf-dark-700 bg-sf-dark-900 p-4 text-sm leading-relaxed text-sf-text-secondary">
+            <h4 className="font-semibold text-sf-text-primary">Open Source Notices</h4>
+            <p className="mt-2">
+              Monstruo Studio is derived from the Velorn open-source project. The editor remains distributed under GPL-3.0, with upstream copyright and source provenance preserved.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.electronAPI?.openExternalUrl?.('https://github.com/VelornLabs/velorn')}
+              className="mt-3 inline-flex items-center gap-2 rounded-md border border-sf-dark-600 bg-sf-dark-800 px-3 py-2 text-xs font-medium text-sf-text-primary transition-colors hover:border-sf-accent/60"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View upstream source
+            </button>
+          </div>
+          <p className="text-xs text-sf-text-muted">
+            Project files, MCP tool IDs, workflow markers, bridge namespaces, and other compatibility identifiers keep their historical names so existing work continues to open safely.
+          </p>
         </div>
       )
       break

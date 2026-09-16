@@ -32,7 +32,7 @@ export const WORKFLOW_CAPABILITY_LANES = Object.freeze({
   utility: 'Utility',
 })
 
-const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn'])
+const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn', 'monstruo studio'])
 
 const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
   'wan22-t2v': Object.freeze({
@@ -58,7 +58,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
     evidenceLabel: 'LTX model family physically present on the durable volume',
-    limitation: 'The exact Velorn workflow still requires a current end-to-end product proof.',
+    limitation: 'The exact Monstruo Studio workflow still requires a current end-to-end product proof.',
   }),
   'ltx23-i2v': Object.freeze({
     portfolioRole: WORKFLOW_PORTFOLIO_ROLES.FRONTIER_BLOCKED,
@@ -66,14 +66,14 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
     evidenceLabel: 'LTX model family physically present on the durable volume',
-    limitation: 'The exact Velorn workflow still requires a current end-to-end product proof.',
+    limitation: 'The exact Monstruo Studio workflow still requires a current end-to-end product proof.',
   }),
   'ltx23-ia2v': Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.INSTALLED,
     availability: 'Runtime required',
     sovereignty: 'Self-hosted',
     evidenceLabel: 'LTX audio-video models physically present on the durable volume',
-    limitation: 'Audio-conditioned output has not yet passed the full Velorn product gate.',
+    limitation: 'Audio-conditioned output has not yet passed the full Monstruo Studio product gate.',
   }),
   'frame-interpolation': Object.freeze({
     portfolioRole: WORKFLOW_PORTFOLIO_ROLES.SOVEREIGN_ALTERNATIVE,
@@ -104,7 +104,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
     availability: 'Blocked until dependencies are installed',
     sovereignty: 'Self-hosted',
-    evidenceLabel: 'The Mel-Band RoFormer workflow is bundled in Velorn.',
+    evidenceLabel: 'The Mel-Band RoFormer workflow is bundled in Monstruo Studio.',
     limitation: 'The exact model weights and runtime pack were absent from the certified durable volume.',
   }),
   'caption-qwen-asr': Object.freeze({
@@ -112,7 +112,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
     availability: 'Blocked until dependencies are installed',
     sovereignty: 'Self-hosted',
-    evidenceLabel: 'The Qwen ASR caption workflow is bundled in Velorn.',
+    evidenceLabel: 'The Qwen ASR caption workflow is bundled in Monstruo Studio.',
     limitation: 'No exact ASR model/runtime proof or validated caption artifact was found.',
   }),
   'elevenlabs-tts': Object.freeze({
@@ -120,7 +120,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.TECHNICALLY_VALIDATED,
     availability: 'Credential verified; exact route smoke test required',
     sovereignty: 'Commercial API',
-    evidenceLabel: 'ElevenLabs has historical voice artifacts, a bundled Velorn TTS workflow and a read-only entitlement preflight that returned HTTP 200 on 2026-09-09.',
+    evidenceLabel: 'ElevenLabs has historical voice artifacts, a bundled Monstruo Studio TTS workflow and a read-only entitlement preflight that returned HTTP 200 on 2026-09-09.',
     qualityObservation: 'Natural voice output is product-proven elsewhere in the ecosystem.',
     limitation: 'Credential authorization does not prove this exact bundled workflow; it still lacks a current artifact and receipt.',
   }),
@@ -129,7 +129,7 @@ const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
     evidenceLevel: WORKFLOW_EVIDENCE_LEVELS.DISCOVERABLE,
     availability: 'Cloud credentials required',
     sovereignty: 'Commercial API',
-    evidenceLabel: 'The Sonilo video-to-music workflow is bundled in Velorn.',
+    evidenceLabel: 'The Sonilo video-to-music workflow is bundled in Monstruo Studio.',
     limitation: 'No authenticated comparative artifact was produced in this phase.',
   }),
   'short-film-dialogue-ltx23-ia2v': Object.freeze({
@@ -193,7 +193,7 @@ function inferSovereignty(workflow) {
 }
 
 function inferAvailability(workflow) {
-  if (workflow?.mode === 'create') return 'Available in Velorn'
+  if (workflow?.mode === 'create') return 'Available in Monstruo Studio'
   if (!workflow?.runnable) return 'Preview only'
   if (workflow?.route === 'local') return 'Runtime required'
   if (workflow?.route === 'cloud') return 'Cloud credentials required'
@@ -212,7 +212,7 @@ export function getWorkflowOperationalMetadata(workflow) {
     sovereignty: override.sovereignty || inferSovereignty(workflow),
     evidenceLabel: override.evidenceLabel || (
       workflow?.mode === 'create'
-        ? 'Native guided-creation surface is present in Velorn'
+        ? 'Native guided-creation surface is present in Monstruo Studio'
         : 'No exact product receipt is attached to this workflow yet'
     ),
     qualityObservation: override.qualityObservation || '',

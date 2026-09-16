@@ -1,0 +1,127 @@
+{
+  "schema": "monstruo-studio.identity-receipt/v1",
+  "created_at": "2026-09-16T00:01:34Z",
+  "status": "VALIDATED_INSTALLED_PRIVATE_BUILD",
+  "baseline": {
+    "source_commit": "75ec15323d7235b8997e6159f554f31c2a89660a",
+    "application_path": "/Users/alfredogongora/Applications/Velorn.app",
+    "bundle_id": "com.comfystudio.app",
+    "app_asar_sha256": "070c8965735a0526d69952cc175c251a0d6796e1764a9be883090c06f6b49c8a",
+    "preserved": true
+  },
+  "implementation": {
+    "repository": "alfredogl1804/velorn",
+    "branch": "feat/monstruo-studio-identity-20260915",
+    "commit": "f981fba9e673b58b789b3e4bf90f9e50d3a48db9",
+    "ci_fix_commit": "72eee178344cc7d009eb0e72947f080c5b6fa1b2",
+    "display_name": "Monstruo Studio",
+    "version": "0.3.32",
+    "bundle_id": "mx.hivecom.monstruostudio",
+    "executable": "Monstruo Studio",
+    "application_path": "/Users/alfredogongora/Applications/Monstruo Studio.app",
+    "user_data_path": "/Users/alfredogongora/Library/Application Support/Monstruo Studio",
+    "app_asar_sha256": "fb0dff3d00daed21d6803cc9e99124d32b2b6376859eb18955947ccbdde491f0",
+    "signed": true,
+    "signature_gate": "codesign --verify --deep --strict PASS",
+    "notarized": false,
+    "gatekeeper": "REJECTED_EXPECTED_PRIVATE_UNNOTARIZED_BUILD"
+  },
+  "identity": {
+    "selected_variant": "A2",
+    "selection_authority": "P16 under Alfredo's explicit delegation after optical-balance feedback",
+    "master_svg": "build/monstruo-studio-app-icon.svg",
+    "master_svg_sha256": "50e7e102410516b6558ad234c4c190a2bee19c370eae12c3eb236cd0f065869d",
+    "icns_sha256": "87f0e49db9e243c3e261e3e11fd8a205968c3dd767d1a7fdbafa3c5584c1150d",
+    "colors": {
+      "background": "#000000",
+      "accent": "#00E5FF"
+    },
+    "typeface": "Space Grotesk",
+    "font_license": "SIL Open Font License 1.1",
+    "visible_brand_audit": {
+      "result": "PASS",
+      "visible_occurrences_remaining": 0,
+      "compatibility_occurrences_reserved": 1038,
+      "legal_attribution_occurrences_reserved": 327,
+      "review_internal_occurrences": 269,
+      "audit_sha256": "44f8ec02a08ba7d73d468a6476cf99d22ba33ccb15a9ac400d3be2ba40f49c05",
+      "rebrand_map_path": "docs/monstruo-studio/MONSTRUO_STUDIO_REBRAND_MAP.json",
+      "rebrand_map_sha256": "b7a76fd3fb0c635c9a2187c836b49a36de4345f61f5a8ef1794fb9ad6dcd3e75"
+    }
+  },
+  "compatibility": {
+    "project_format": "project.comfystudio",
+    "legacy_project_fallback": "project.storyflow",
+    "protocol_scheme": "comfystudio://",
+    "mcp_endpoint": "http://127.0.0.1:19790/mcp",
+    "mcp_protocol_version": "2024-11-05",
+    "mcp_machine_name": "velorn",
+    "mcp_visible_title": "Monstruo Studio",
+    "mcp_tool_count": 130,
+    "mcp_tool_ids_unchanged": true,
+    "velorn_process_count_at_close": 0,
+    "monstruo_studio_process_count_at_close": 1,
+    "mcp_listener_count_at_close": 1
+  },
+  "synthetic_project": {
+    "path": "/Users/alfredogongora/Documents/Monstruo/qa-monstruo-studio-20260915/projects/Monstruo Studio Identity QA",
+    "project_file_sha256": "7a894667a1a0c66fe61b0f5ce7a479427402d03c3b0852857ec10b9b7afb075d",
+    "timeline_count": 1,
+    "track_count": 2,
+    "asset_count": 0,
+    "clip_count": 0,
+    "cold_reopen": "PASS",
+    "preview_before_apply": "PASS",
+    "reversible_operation": "playhead 0 -> 1.5s -> 0 PASS"
+  },
+  "tests": [
+    "electron/main.js syntax PASS",
+    "electron/preload.js syntax PASS",
+    "electron/productIdentity.cjs syntax PASS",
+    "monstruoStudioIdentity.test.cjs PASS",
+    "monstruoStudioUserData.test.cjs PASS",
+    "monstruoStudioProjectCompatibility.test.mjs PASS",
+    "test:i18n PASS",
+    "test:discover PASS",
+    "test:mcp-h3 PASS",
+    "test:mcp-my-workflows PASS",
+    "Vite production build PASS",
+    "runtime package gate darwin/arm64 PASS",
+    "remote PR CI run 35039593506 PASS",
+    "secret scan PASS",
+    "git diff whitespace check PASS"
+  ],
+  "pull_request": {
+    "number": 5,
+    "url": "https://github.com/alfredogl1804/velorn/pull/5",
+    "technical_ci": "PASS",
+    "cla_check": "BLOCKED_PENDING_EXPLICIT_USER_ATTESTATION",
+    "merged": false
+  },
+  "visual_evidence": {
+    "welcome-final.png": "0bcadd7393bf77c55778083d0b25d0da2210d5a6f0f6e66360089239381812f5",
+    "editor-screen.png": "78ad5edd15b01ea751d8d469a3dc4c24a6b7832b12344b9ff8366404f6594fd2",
+    "generate-screen.png": "3f3a67c82c0b07467b521f782630f8a2f8dead69dfee72c4e3f27a39ef235676",
+    "settings-about-screen.png": "107111bf16333ce44af1ea45b924d749d9914bc40b6a8ca23bb8330211ac6cae"
+  },
+  "distribution_artifact": {
+    "path": "/Users/alfredogongora/worktrees/monstruo-studio-identity-20260915/release/Monstruo Studio-0.3.32-mac-arm64.dmg",
+    "bytes": 269921298,
+    "sha256": "09dad2a48b8f97e0b66bb307e2119c6470838789cdb44909edb8ea00334989cc",
+    "mounted_read_only_audit": "PASS",
+    "public_release_ready": false,
+    "blocker": "Apple notarization not performed"
+  },
+  "prohibited_actions": {
+    "runpod_touched": false,
+    "tunnel_opened": false,
+    "paid_generation_executed": false,
+    "real_projects_modified": false,
+    "velorn_overwritten": false,
+    "public_release_published": false
+  },
+  "rollback": {
+    "strategy": "Close Monstruo Studio and reopen the untouched Velorn.app with its separate userData.",
+    "destructive_migration_required": false
+  }
+}

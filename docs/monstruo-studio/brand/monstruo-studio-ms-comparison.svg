@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1220" viewBox="0 0 1800 1220" role="img" aria-labelledby="title desc">
+  <title id="title">Monstruo Studio — comparación perceptual de monogramas MS</title>
+  <desc id="desc">Tres variantes vectoriales sobre placa negra, tamaños pequeños y chrome editorial.</desc>
+  <defs>
+    <style>
+      .title { font: 700 34px 'Space Grotesk', sans-serif; fill: #F5F5F7; letter-spacing: -0.7px; }
+      .subtitle { font: 400 16px 'Space Grotesk', sans-serif; fill: #8E969B; }
+      .eyebrow { font: 700 13px 'Space Grotesk', sans-serif; fill: #00E5FF; letter-spacing: 2px; }
+      .variant-title { font: 700 23px 'Space Grotesk', sans-serif; fill: #F5F5F7; }
+      .caption { font: 500 13px 'Space Grotesk', sans-serif; fill: #7F898E; letter-spacing: .4px; }
+      .shell-title { font: 600 15px 'Space Grotesk', sans-serif; fill: #F5F5F7; }
+      .micro { font: 600 8px 'Space Grotesk', sans-serif; fill: #667178; letter-spacing: 1px; }
+      .label { font: 600 12px 'Space Grotesk', sans-serif; fill: #00E5FF; letter-spacing: 1px; }
+      .body { font: 400 12px 'Space Grotesk', sans-serif; fill: #AEB6BA; }
+    </style>
+  </defs>
+  <rect width="1800" height="1220" fill="#000000"/>
+  <text x="70" y="48" class="title">Monstruo Studio · monograma MS</text>
+  <text x="70" y="76" class="subtitle">Mismo ADN: Space Grotesk Bold · #00E5FF · negro absoluto · una sola placa · sin glow · sin arte heredado</text>
+
+  <g id="card-a">
+    <rect x="70" y="92" width="520" height="1038" rx="26" fill="#090B0D" stroke="#1B2428"/>
+    <text x="102" y="139" class="eyebrow">VARIANTE A</text>
+
+    <g transform="translate(202 160) scale(0.25)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-a-monogram-a" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(116 718) scale(0.6 -0.6)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(560 718) scale(0.6 -0.6)"/>
+    </g>
+    </g>
+    <text x="330" y="450" class="variant-title" text-anchor="middle">Claridad horizontal</text>
+
+    <g transform="translate(175 499) scale(0.015625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-a-monogram-a" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(116 718) scale(0.6 -0.6)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(560 718) scale(0.6 -0.6)"/>
+    </g>
+    </g>
+    <g transform="translate(269 491) scale(0.03125)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-a-monogram-a" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(116 718) scale(0.6 -0.6)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(560 718) scale(0.6 -0.6)"/>
+    </g>
+    </g>
+    <g transform="translate(363 475) scale(0.0625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-a-monogram-a" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(116 718) scale(0.6 -0.6)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(560 718) scale(0.6 -0.6)"/>
+    </g>
+    </g>
+    <text x="102" y="574" class="caption">16 · 32 · 64 px · maestro mostrado a 256 px</text>
+
+    <g transform="translate(92 630)">
+      <rect width="476" height="300" rx="18" fill="#000000" stroke="#20272B"/>
+      <rect width="476" height="54" rx="18" fill="#07090A"/>
+      <rect y="36" width="476" height="18" fill="#07090A"/>
+
+    <g transform="translate(98 665) scale(0.0410156)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-a-monogram-a" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(116 718) scale(0.6 -0.6)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(560 718) scale(0.6 -0.6)"/>
+    </g>
+    </g>
+      <text x="80" y="27" class="shell-title">Monstruo Studio</text>
+      <circle cx="450" cy="27" r="4" fill="#00E5FF"/>
+      <rect x="16" y="72" width="84" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="116" y="72" width="224" height="156" rx="8" fill="#07090A"/>
+      <rect x="356" y="72" width="104" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="16" y="244" width="444" height="40" rx="7" fill="#0A0D0F"/>
+      <rect x="126" y="86" width="204" height="112" rx="6" fill="#101417"/>
+      <path d="M16 255H460" stroke="#1F2A2F"/>
+      <rect x="128" y="210" width="82" height="4" rx="2" fill="#00E5FF"/>
+      <rect x="214" y="210" width="112" height="4" rx="2" fill="#353C40"/>
+      <text x="28" y="100" class="micro">MEDIA</text>
+      <text x="368" y="100" class="micro">INSPECTOR</text>
+      <text x="26" y="271" class="micro">TIMELINE</text>
+    </g>
+
+    <text x="102" y="986" class="label">Lectura</text>
+    <text x="102" y="1019" class="body">Máxima legibilidad, aire óptico y lectura inmediata de ambas letras.</text>
+    <text x="102" y="1070" class="label">Riesgo a juzgar</text>
+    <text x="102" y="1103" class="body">Puede sentirse más wordmark que monograma.</text>
+  </g>
+  <g id="card-b">
+    <rect x="640" y="92" width="520" height="1038" rx="26" fill="#090B0D" stroke="#1B2428"/>
+    <text x="672" y="139" class="eyebrow">VARIANTE B</text>
+
+    <g transform="translate(772 160) scale(0.25)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-b-monogram-b" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(86 728) scale(0.64 -0.64)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(548 724) scale(0.64 -0.64)"/>
+    </g>
+    </g>
+    <text x="900" y="450" class="variant-title" text-anchor="middle">Compacta editorial</text>
+
+    <g transform="translate(745 499) scale(0.015625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-b-monogram-b" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(86 728) scale(0.64 -0.64)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(548 724) scale(0.64 -0.64)"/>
+    </g>
+    </g>
+    <g transform="translate(839 491) scale(0.03125)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-b-monogram-b" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(86 728) scale(0.64 -0.64)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(548 724) scale(0.64 -0.64)"/>
+    </g>
+    </g>
+    <g transform="translate(933 475) scale(0.0625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-b-monogram-b" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(86 728) scale(0.64 -0.64)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(548 724) scale(0.64 -0.64)"/>
+    </g>
+    </g>
+    <text x="672" y="574" class="caption">16 · 32 · 64 px · maestro mostrado a 256 px</text>
+
+    <g transform="translate(662 630)">
+      <rect width="476" height="300" rx="18" fill="#000000" stroke="#20272B"/>
+      <rect width="476" height="54" rx="18" fill="#07090A"/>
+      <rect y="36" width="476" height="18" fill="#07090A"/>
+
+    <g transform="translate(668 665) scale(0.0410156)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-b-monogram-b" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(86 728) scale(0.64 -0.64)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(548 724) scale(0.64 -0.64)"/>
+    </g>
+    </g>
+      <text x="80" y="27" class="shell-title">Monstruo Studio</text>
+      <circle cx="450" cy="27" r="4" fill="#00E5FF"/>
+      <rect x="16" y="72" width="84" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="116" y="72" width="224" height="156" rx="8" fill="#07090A"/>
+      <rect x="356" y="72" width="104" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="16" y="244" width="444" height="40" rx="7" fill="#0A0D0F"/>
+      <rect x="126" y="86" width="204" height="112" rx="6" fill="#101417"/>
+      <path d="M16 255H460" stroke="#1F2A2F"/>
+      <rect x="128" y="210" width="82" height="4" rx="2" fill="#00E5FF"/>
+      <rect x="214" y="210" width="112" height="4" rx="2" fill="#353C40"/>
+      <text x="28" y="100" class="micro">MEDIA</text>
+      <text x="368" y="100" class="micro">INSPECTOR</text>
+      <text x="26" y="271" class="micro">TIMELINE</text>
+    </g>
+
+    <text x="672" y="986" class="label">Lectura</text>
+    <text x="672" y="1019" class="body">Kerning cerrado y mayor presencia en Dock sin solapamiento decorativo.</text>
+    <text x="672" y="1070" class="label">Riesgo a juzgar</text>
+    <text x="672" y="1103" class="body">Puede perder aire en tamaños mínimos.</text>
+  </g>
+  <g id="card-c">
+    <rect x="1210" y="92" width="520" height="1038" rx="26" fill="#090B0D" stroke="#1B2428"/>
+    <text x="1242" y="139" class="eyebrow">VARIANTE C</text>
+
+    <g transform="translate(1342 160) scale(0.25)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-c-monogram-c" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(74 730) scale(0.66 -0.66)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(528 730) scale(0.66 -0.66)"/>
+    </g>
+    </g>
+    <text x="1470" y="450" class="variant-title" text-anchor="middle">Masa integrada</text>
+
+    <g transform="translate(1315 499) scale(0.015625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-c-monogram-c" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(74 730) scale(0.66 -0.66)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(528 730) scale(0.66 -0.66)"/>
+    </g>
+    </g>
+    <g transform="translate(1409 491) scale(0.03125)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-c-monogram-c" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(74 730) scale(0.66 -0.66)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(528 730) scale(0.66 -0.66)"/>
+    </g>
+    </g>
+    <g transform="translate(1503 475) scale(0.0625)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-c-monogram-c" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(74 730) scale(0.66 -0.66)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(528 730) scale(0.66 -0.66)"/>
+    </g>
+    </g>
+    <text x="1242" y="574" class="caption">16 · 32 · 64 px · maestro mostrado a 256 px</text>
+
+    <g transform="translate(1232 630)">
+      <rect width="476" height="300" rx="18" fill="#000000" stroke="#20272B"/>
+      <rect width="476" height="54" rx="18" fill="#07090A"/>
+      <rect y="36" width="476" height="18" fill="#07090A"/>
+
+    <g transform="translate(1238 665) scale(0.0410156)">
+      <rect x="24" y="24" width="976" height="976" rx="232" fill="#000000" stroke="#103139" stroke-width="2"/>
+
+    <g id="preview-c-monogram-c" aria-label="MS">
+      <path d="M86 0V700H211L423 38H435L647 700H772V0H710V662H698L486 0H372L160 662H148V0Z" fill="#00E5FF"
+            transform="translate(74 730) scale(0.66 -0.66)"/>
+      <path d="M315 -14Q240 -14 181.0 12.5Q122 39 88.0 93.5Q54 148 54 232V251H118V232Q118 135 173.5 88.5Q229 42 315 42Q402 42 449.0 82.5Q496 123 496 186Q496 228 475.5 253.5Q455 279 418.5 294.5Q382 310 334 322L270 338Q213 353 168.0 375.5Q123 398 97.0 434.5Q71 471 71 528Q71 585 100.5 627.0Q130 669 182.0 691.5Q234 714 303 714Q372 714 427.5 690.0Q483 666 515.5 619.5Q548 573 548 503V456H484V503Q484 558 460.0 592.0Q436 626 395.0 642.0Q354 658 303 658Q230 658 182.5 624.5Q135 591 135 528Q135 486 154.5 461.0Q174 436 209.5 421.0Q245 406 293 394L357 378Q412 365 458.0 343.5Q504 322 532.0 284.5Q560 247 560 186Q560 125 529.5 80.0Q499 35 444.0 10.5Q389 -14 315 -14Z" fill="#00E5FF"
+            transform="translate(528 730) scale(0.66 -0.66)"/>
+    </g>
+    </g>
+      <text x="80" y="27" class="shell-title">Monstruo Studio</text>
+      <circle cx="450" cy="27" r="4" fill="#00E5FF"/>
+      <rect x="16" y="72" width="84" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="116" y="72" width="224" height="156" rx="8" fill="#07090A"/>
+      <rect x="356" y="72" width="104" height="156" rx="8" fill="#0C0F11"/>
+      <rect x="16" y="244" width="444" height="40" rx="7" fill="#0A0D0F"/>
+      <rect x="126" y="86" width="204" height="112" rx="6" fill="#101417"/>
+      <path d="M16 255H460" stroke="#1F2A2F"/>
+      <rect x="128" y="210" width="82" height="4" rx="2" fill="#00E5FF"/>
+      <rect x="214" y="210" width="112" height="4" rx="2" fill="#353C40"/>
+      <text x="28" y="100" class="micro">MEDIA</text>
+      <text x="368" y="100" class="micro">INSPECTOR</text>
+      <text x="26" y="271" class="micro">TIMELINE</text>
+    </g>
+
+    <text x="1242" y="986" class="label">Lectura</text>
+    <text x="1242" y="1019" class="body">M y S se tocan en una sola masa visual; conserva identificación de ambas.</text>
+    <text x="1242" y="1070" class="label">Riesgo a juzgar</text>
+    <text x="1242" y="1103" class="body">La unión puede reducir separación M/S.</text>
+  </g>
+  <text x="70" y="1182" class="subtitle">Gate perceptual: elegir A, B o C antes de aplicar iconos finales o identidad completa a la aplicación.</text>
+</svg>

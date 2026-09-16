@@ -5,6 +5,7 @@ const http = require('node:http')
 const { createComfyStudioMcpServer } = require('../electron/mcpServer')
 const {
   listCalibrationProfiles,
+  resolveCalibrationIntent,
   resolveCalibrationProfile,
 } = require('../electron/workflowCalibrationProfiles.cjs')
 
@@ -293,6 +294,54 @@ test('keeps the Equalizer registry route-exact and exposes no invented profiles'
   assert.equal(clamped.technicalParameters.referenceImageStrength, 1.363)
   assert.equal(clamped.technicalParameters.poseStrength, 0.5)
   assert.equal(clamped.technicalParameters.poseEndPercent, 0.9)
+})
+
+test('maps a registered natural-language intent to the exact manual Wan Animate 2 calibration patch', () => {
+  const phrase = 'Conserva al máximo la identidad, sigue el movimiento aprobado y bloquea la coreografía.'
+  const resolvedIntent = resolveCalibrationIntent('wan-animate2-identity-motion-v1', phrase)
+  assert.deepEqual(resolvedIntent.controls, {
+    identityFidelity: 96,
+    motionAdherence: 75,
+    choreographyLock: 100,
+  })
+
+  const shared = {
+    calibrationProfileId: 'wan-animate2-identity-motion-v1',
+    fps: 24,
+    durationSeconds: 3.375,
+    resolution: { width: 480, height: 848 },
+  }
+  const natural = resolveCalibrationProfile('video_wan_animate2', {
+    ...shared,
+    calibrationIntent: phrase,
+  }, { seed: 424242 })
+  const manual = resolveCalibrationProfile('video_wan_animate2', {
+    ...shared,
+    calibrationControls: resolvedIntent.controls,
+  }, { seed: 424242 })
+
+  assert.deepEqual(natural.calibrationPatch, manual.calibrationPatch)
+  assert.deepEqual(natural.technicalParameters, manual.technicalParameters)
+  assert.deepEqual(natural.intentEquivalence.canonicalControls, manual.intentEquivalence.canonicalControls)
+  assert.equal(natural.intentEquivalence.source, 'natural-language')
+  assert.equal(manual.intentEquivalence.source, 'manual-controls')
+  assert.deepEqual(natural.intentEquivalence.manualEquivalent, {
+    calibrationControls: resolvedIntent.controls,
+  })
+})
+
+test('fails closed for unknown or conflicting natural-language calibration intent', () => {
+  assert.throws(
+    () => resolveCalibrationProfile('video_wan_animate2', { calibrationIntent: 'hazlo mejor y más cinematográfico' }),
+    /Unsupported natural calibration intent/
+  )
+  assert.throws(
+    () => resolveCalibrationProfile('video_wan_animate2', {
+      calibrationIntent: 'Conserva al máximo la identidad, sigue el movimiento aprobado y bloquea la coreografía.',
+      calibrationControls: { motionAdherence: 10 },
+    }),
+    /conflicts with explicit calibrationControls\.motionAdherence/
+  )
 })
 
 test('previews the Wan Animate 2 champion with profile, patch, locks, cost and undo without dispatching', async (t) => {

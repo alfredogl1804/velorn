@@ -551,7 +551,7 @@ export default function WorkflowBrowser({
             ))}
           </div>
           <div className="mt-2 text-[10px] leading-relaxed text-sf-text-muted">
-            Advisory ranking only. Model benchmark and exact-route proof remain separate; Kernel still authorizes spend and policy, while media stays direct between Velorn and the selected runtime.
+            Advisory ranking only. Model benchmark and exact-route proof remain separate; Kernel still authorizes spend and policy, while media stays direct between Monstruo Studio and the selected runtime.
           </div>
         </div>
       )}
@@ -615,7 +615,7 @@ export default function WorkflowBrowser({
             )}
             {customLibrary.workflows.length === 0 ? (
               <div className="rounded-xl border border-dashed border-sf-dark-600 bg-sf-dark-800/60 px-4 py-6 text-center text-xs text-sf-text-muted">
-                Open any workflow in the ComfyUI tab and hit "Save to Velorn" — it will show up here
+                Open any workflow in the ComfyUI tab and hit "Save to Monstruo Studio" — it will show up here
                 as a one-click launcher.
               </div>
             ) : (

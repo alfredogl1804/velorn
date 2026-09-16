@@ -107,8 +107,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.comfystudio.app",
-    "productName": "Velorn",
+    "appId": "mx.hivecom.monstruostudio",
+    "productName": "Monstruo Studio",
     "copyright": "Copyright © 2024-2026",
     "beforePack": "scripts/electron-builder-before-pack.cjs",
     "afterPack": "scripts/electron-builder-after-pack.cjs",
@@ -166,6 +166,14 @@
       {
         "from": "scripts/rtx_vsr_stream.py",
         "to": "scripts/rtx_vsr_stream.py"
+      },
+      {
+        "from": "LICENSE",
+        "to": "open-source/LICENSE-VELORN-GPL-3.0.txt"
+      },
+      {
+        "from": "docs/monstruo-studio/OPEN_SOURCE_NOTICES.md",
+        "to": "open-source/OPEN_SOURCE_NOTICES.md"
       }
     ],
     "win": {

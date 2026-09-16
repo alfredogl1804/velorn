@@ -389,7 +389,7 @@ const comfyTemplateOverrides = Object.freeze({
     portfolioRole: 'PREMIUM_ALTERNATIVE',
     capabilityLane: 'Finishing · video upscale',
     evidenceLevel: 'DISCOVERABLE',
-    evidenceLabel: 'Official Topaz Astra Fast workflow is discoverable and also exposed by the guided Velorn catalog.',
+    evidenceLabel: 'Official Topaz Astra Fast workflow is discoverable and also exposed by the guided Monstruo Studio catalog.',
     limitation: 'No exact Astra Fast artifact has passed the product gate.',
   }),
   api_topaz_starlight_precise25: Object.freeze({
