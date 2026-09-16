@@ -32,7 +32,7 @@ export const WORKFLOW_CAPABILITY_LANES = Object.freeze({
   utility: 'Utility',
 })
 
-const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn'])
+const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn', 'monstruo studio'])
 
 const WORKFLOW_EVIDENCE_OVERRIDES = Object.freeze({
   'wan22-t2v': Object.freeze({
