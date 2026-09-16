@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "docs" / "monstruo-studio"
-MAP_PATH = OUT_DIR / "MONSTRUO_STUDIO_BRAND_MAP.json"
+MAP_PATH = OUT_DIR / "MONSTRUO_STUDIO_REBRAND_MAP.json"
 AUDIT_PATH = OUT_DIR / "MONSTRUO_STUDIO_VISIBLE_BRAND_AUDIT.json"
 
 TERMS = re.compile(r"VelornLabs|velorn\.ai|Velorn|velorn|ComfyStudio|comfystudio")

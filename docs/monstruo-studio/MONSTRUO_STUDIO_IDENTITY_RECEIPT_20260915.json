@@ -13,13 +13,14 @@
     "repository": "alfredogl1804/velorn",
     "branch": "feat/monstruo-studio-identity-20260915",
     "commit": "f981fba9e673b58b789b3e4bf90f9e50d3a48db9",
+    "ci_fix_commit": "72eee178344cc7d009eb0e72947f080c5b6fa1b2",
     "display_name": "Monstruo Studio",
     "version": "0.3.32",
     "bundle_id": "mx.hivecom.monstruostudio",
     "executable": "Monstruo Studio",
     "application_path": "/Users/alfredogongora/Applications/Monstruo Studio.app",
     "user_data_path": "/Users/alfredogongora/Library/Application Support/Monstruo Studio",
-    "app_asar_sha256": "ff0a73e4baa5a2842eab795cc9926195515ada0a9a13754c96c052f60b9bc65a",
+    "app_asar_sha256": "fb0dff3d00daed21d6803cc9e99124d32b2b6376859eb18955947ccbdde491f0",
     "signed": true,
     "signature_gate": "codesign --verify --deep --strict PASS",
     "notarized": false,
@@ -40,11 +41,12 @@
     "visible_brand_audit": {
       "result": "PASS",
       "visible_occurrences_remaining": 0,
-      "compatibility_occurrences_reserved": 1008,
-      "legal_attribution_occurrences_reserved": 326,
+      "compatibility_occurrences_reserved": 1038,
+      "legal_attribution_occurrences_reserved": 327,
       "review_internal_occurrences": 269,
-      "audit_sha256": "db7ef233877a8880c83c2c5a0c2f0b0bdd1e2b6c05ed9b2e2c017a65cb274482",
-      "brand_map_sha256": "31eaf2ea9e5eaf157304818ee366364b8f30784fb7ff1a53eb03127f4fc273da"
+      "audit_sha256": "44f8ec02a08ba7d73d468a6476cf99d22ba33ccb15a9ac400d3be2ba40f49c05",
+      "rebrand_map_path": "docs/monstruo-studio/MONSTRUO_STUDIO_REBRAND_MAP.json",
+      "rebrand_map_sha256": "b7a76fd3fb0c635c9a2187c836b49a36de4345f61f5a8ef1794fb9ad6dcd3e75"
     }
   },
   "compatibility": {
@@ -85,9 +87,17 @@
     "test:mcp-my-workflows PASS",
     "Vite production build PASS",
     "runtime package gate darwin/arm64 PASS",
+    "remote PR CI run 35039593506 PASS",
     "secret scan PASS",
     "git diff whitespace check PASS"
   ],
+  "pull_request": {
+    "number": 5,
+    "url": "https://github.com/alfredogl1804/velorn/pull/5",
+    "technical_ci": "PASS",
+    "cla_check": "BLOCKED_PENDING_EXPLICIT_USER_ATTESTATION",
+    "merged": false
+  },
   "visual_evidence": {
     "welcome-final.png": "0bcadd7393bf77c55778083d0b25d0da2210d5a6f0f6e66360089239381812f5",
     "editor-screen.png": "78ad5edd15b01ea751d8d469a3dc4c24a6b7832b12344b9ff8366404f6594fd2",
@@ -96,8 +106,8 @@
   },
   "distribution_artifact": {
     "path": "/Users/alfredogongora/worktrees/monstruo-studio-identity-20260915/release/Monstruo Studio-0.3.32-mac-arm64.dmg",
-    "bytes": 269917086,
-    "sha256": "bd4853a9895a191fcac49ce6e2c21265c31cb173bcdd9f48fa8402311dafcc45",
+    "bytes": 269921298,
+    "sha256": "09dad2a48b8f97e0b66bb307e2119c6470838789cdb44909edb8ea00334989cc",
     "mounted_read_only_audit": "PASS",
     "public_release_ready": false,
     "blocker": "Apple notarization not performed"

@@ -1,6 +1,6 @@
 {
   "schema": "monstruo-studio.brand-map/v1",
-  "generated_at": "2026-09-15T23:56:40.465350+00:00",
+  "generated_at": "2026-09-16T00:20:58.776083+00:00",
   "phase": "FINAL_IMPLEMENTATION",
   "baseline_commit": "75ec15323d7235b8997e6159f554f31c2a89660a",
   "target_visible_brand": "Monstruo Studio",
@@ -12,16 +12,16 @@
     "REVIEW_INTERNAL": "Reviewed internal/history reference; not used as product identity."
   },
   "summary": {
-    "findings": 1603,
-    "files": 233,
+    "findings": 1634,
+    "files": 237,
     "by_classification": {
-      "COMPATIBILITY_KEEP": 1008,
-      "LEGAL_ATTRIBUTION_KEEP": 326,
+      "COMPATIBILITY_KEEP": 1038,
+      "LEGAL_ATTRIBUTION_KEEP": 327,
       "REVIEW_INTERNAL": 269
     },
     "files_by_classification": {
-      "COMPATIBILITY_KEEP": 186,
-      "LEGAL_ATTRIBUTION_KEEP": 63,
+      "COMPATIBILITY_KEEP": 190,
+      "LEGAL_ATTRIBUTION_KEEP": 64,
       "REVIEW_INTERNAL": 39
     }
   },
@@ -13403,7 +13403,7 @@
       "token": "velorn",
       "classification": "COMPATIBILITY_KEEP",
       "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
-      "excerpt": "const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn'])",
+      "excerpt": "const SELF_HOSTED_PROVIDER_NAMES = new Set(['local', 'velorn', 'monstruo studio'])",
       "implementation_state": "PRESERVED_COMPATIBILITY"
     },
     {
@@ -15007,6 +15007,26 @@
       "implementation_state": "PRESERVED_COMPATIBILITY"
     },
     {
+      "path": "tests/fixtures/monstruo-studio-mcp-tool-ids.json",
+      "line": 62,
+      "column": 12,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "\"inspect_velorn_workflow\",",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/fixtures/monstruo-studio-mcp-tool-ids.json",
+      "line": 68,
+      "column": 9,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "\"list_velorn_workflows\",",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
       "path": "tests/gifExportFfmpeg.test.js",
       "line": 89,
       "column": 63,
@@ -15264,6 +15284,296 @@
       "classification": "COMPATIBILITY_KEEP",
       "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
       "excerpt": "const tempDirectory = await fsp.mkdtemp(path.join(os.tmpdir(), 'velorn-alpha-export-'))",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 14,
+      "column": 50,
+      "token": "Velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "['electron/comfyLauncher.js', [\"'User-Agent': 'Velorn-Launcher/1.0'\"]],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 15,
+      "column": 31,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "['electron/comfyui-injected/comfystudio_bridge/web/js/comfystudio_bridge.js', ['name: \"Velorn.Bridge\"']],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 15,
+      "column": 57,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "['electron/comfyui-injected/comfystudio_bridge/web/js/comfystudio_bridge.js', ['name: \"Velorn.Bridge\"']],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 15,
+      "column": 90,
+      "token": "Velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "['electron/comfyui-injected/comfystudio_bridge/web/js/comfystudio_bridge.js', ['name: \"Velorn.Bridge\"']],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 16,
+      "column": 34,
+      "token": "Velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "['src/services/comfyui.js', [\"'Velorn Output Resize'\", \"'ComfyStudio Output Resize'\"]],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 16,
+      "column": 60,
+      "token": "ComfyStudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "['src/services/comfyui.js', [\"'Velorn Output Resize'\", \"'ComfyStudio Output Resize'\"]],",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 17,
+      "column": 59,
+      "token": "Velorn",
+      "classification": "LEGAL_ATTRIBUTION_KEEP",
+      "rationale": "URL, licencia o procedencia upstream preservada de forma veraz bajo GPL-3.0.",
+      "excerpt": "['src/components/SettingsModal.jsx', ['derived from the Velorn open-source project']],",
+      "implementation_state": "PRESERVED_ATTRIBUTION"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 30,
+      "column": 27,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.equal(pkg.name, 'velorn')",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 56,
+      "column": 47,
+      "token": "Velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "for (const match of text.matchAll(/\\b(?:Velorn|ComfyStudio)\\b/g)) {",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 56,
+      "column": 54,
+      "token": "ComfyStudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "for (const match of text.matchAll(/\\b(?:Velorn|ComfyStudio)\\b/g)) {",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 72,
+      "column": 17,
+      "token": "ComfyStudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "const { createComfyStudioMcpServer } = require('../electron/mcpServer')",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 73,
+      "column": 24,
+      "token": "ComfyStudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "const server = createComfyStudioMcpServer({ version: 'test' })",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 78,
+      "column": 48,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "for (const required of ['get_project', 'list_velorn_workflows', 'inspect_velorn_workflow']) {",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 78,
+      "column": 76,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "for (const required of ['get_project', 'list_velorn_workflows', 'inspect_velorn_workflow']) {",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 82,
+      "column": 51,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.match(source, /serverInfo:\\s*\\{\\s*name: 'velorn',\\s*title: 'Monstruo Studio',/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 84,
+      "column": 30,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.match(source, /list_comfystudio_workflows/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 85,
+      "column": 33,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.match(source, /inspect_comfystudio_workflow/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 89,
+      "column": 88,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.match(read('src/services/fileSystem.js'), /const PROJECT_FILENAME = 'project\\.comfystudio'/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 91,
+      "column": 43,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "assert.match(read('electron/main.js'), /comfystudio:/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 95,
+      "column": 50,
+      "token": "Velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "assert.match(read('src/services/comfyui.js'), /Velorn Output Resize/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 96,
+      "column": 50,
+      "token": "ComfyStudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "assert.match(read('src/services/comfyui.js'), /ComfyStudio Output Resize/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 97,
+      "column": 37,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.match(read('.mcp.json'), /\"velorn\"/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 105,
+      "column": 66,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.doesNotMatch(read('src/components/WelcomeScreen.jsx'), /velorn-home-balanced|velorn-project-selection|HeroVideoLoop/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioIdentity.test.cjs",
+      "line": 105,
+      "column": 87,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.doesNotMatch(read('src/components/WelcomeScreen.jsx'), /velorn-home-balanced|velorn-project-selection|HeroVideoLoop/)",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioProjectCompatibility.test.mjs",
+      "line": 58,
+      "column": 44,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "test('opens and saves the physical project.comfystudio contract without renaming it', async () => {",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioProjectCompatibility.test.mjs",
+      "line": 63,
+      "column": 41,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "await writeFile(join(root, 'project.comfystudio'), JSON.stringify(fixture))",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioProjectCompatibility.test.mjs",
+      "line": 67,
+      "column": 65,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "const saved = JSON.parse(await readFile(join(root, 'project.comfystudio'), 'utf8'))",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioProjectCompatibility.test.mjs",
+      "line": 73,
+      "column": 54,
+      "token": "comfystudio",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador técnico o legado conservado para proyectos, protocolos, workflows, storage o integraciones existentes.",
+      "excerpt": "assert.ok(snapshots.some((name) => /^project-.*\\.comfystudio$/.test(name)))",
+      "implementation_state": "PRESERVED_COMPATIBILITY"
+    },
+    {
+      "path": "tests/monstruoStudioUserData.test.cjs",
+      "line": 12,
+      "column": 27,
+      "token": "velorn",
+      "classification": "COMPATIBILITY_KEEP",
+      "rationale": "Identificador interno conservado para compatibilidad.",
+      "excerpt": "let userData = '/legacy/velorn'",
       "implementation_state": "PRESERVED_COMPATIBILITY"
     },
     {

@@ -1,6 +1,6 @@
 {
   "schema": "monstruo-studio.visible-brand-audit/v1",
-  "generated_at": "2026-09-15T23:56:40.468552+00:00",
+  "generated_at": "2026-09-16T00:20:58.779471+00:00",
   "phase": "FINAL_IMPLEMENTATION",
   "gate": "PASS",
   "result": "PASS",
@@ -9,8 +9,8 @@
   "visible_occurrences_remaining": 0,
   "visible_files_remaining": 0,
   "visible_findings": [],
-  "compatibility_occurrences_reserved": 1008,
-  "legal_attribution_occurrences_reserved": 326,
+  "compatibility_occurrences_reserved": 1038,
+  "legal_attribution_occurrences_reserved": 327,
   "review_internal_occurrences": 269,
   "whole_word_exception_policy": {
     "electron/comfyLauncher.js": {
@@ -27,5 +27,5 @@
       "derived from the Velorn open-source project": "LEGAL_ATTRIBUTION_KEEP"
     }
   },
-  "brand_map_sha256": "31eaf2ea9e5eaf157304818ee366364b8f30784fb7ff1a53eb03127f4fc273da"
+  "brand_map_sha256": "b7a76fd3fb0c635c9a2187c836b49a36de4345f61f5a8ef1794fb9ad6dcd3e75"
 }

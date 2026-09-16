@@ -8,6 +8,8 @@
 
 **Commit de implementación:** `f981fba9e673b58b789b3e4bf90f9e50d3a48db9`
 
+**Corrección CI:** `72eee178344cc7d009eb0e72947f080c5b6fa1b2`
+
 **Producto:** Monstruo Studio `0.3.32`
 
 ## Dictamen
@@ -43,7 +45,7 @@ La firma es válida para uso local con la identidad Apple Development disponible
 El bundle se construyó con Electron Builder `26.15.3` y Electron `28.3.3` desde dependencias bloqueadas. El runtime package gate pasó para `darwin/arm64`; RIFE conservó su provenance y smoke empaquetado. El `app.asar` instalado tiene SHA-256:
 
 ```text
-ff0a73e4baa5a2842eab795cc9926195515ada0a9a13754c96c052f60b9bc65a
+fb0dff3d00daed21d6803cc9e99124d32b2b6376859eb18955947ccbdde491f0
 ```
 
 El DMG privado se generó como:
@@ -55,7 +57,7 @@ release/Monstruo Studio-0.3.32-mac-arm64.dmg
 Su SHA-256 es:
 
 ```text
-bd4853a9895a191fcac49ce6e2c21265c31cb173bcdd9f48fa8402311dafcc45
+09dad2a48b8f97e0b66bb307e2119c6470838789cdb44909edb8ea00334989cc
 ```
 
 Se montó read-only y confirmó `Monstruo Studio.app`, bundle ID correcto, nombre visible correcto y firma interna válida. No se publicó release.
@@ -77,6 +79,8 @@ Pasaron:
 - scanner final `MONSTRUO_STUDIO_VISIBLE_BRAND_AUDIT.json` con **PASS y cero hallazgos visibles pendientes**.
 
 Los avisos de Vite sobre chunks grandes y módulos importados estática/dinámicamente son deuda preexistente de empaquetado, no fallos de esta identidad.
+
+El primer run remoto reveló una regresión atribuible: el provider visible `Monstruo Studio` ya no coincidía con el set histórico que clasifica `local`/`velorn` como self-hosted. Se añadió `monstruo studio` al mismo set, se reprodujo localmente el workflow completo de CI y el run remoto `35039593506` terminó **SUCCESS**. El check separado de Contributor License Agreement permanece rojo porque exige que el usuario marque explícitamente la declaración legal del template; P16 no la atestiguó por cuenta de Alfredo.
 
 ## Identificadores conservados deliberadamente
 
